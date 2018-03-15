@@ -6,7 +6,9 @@ Learn OpenGL from [LearnOpenGL CN](https://learnopengl-cn.github.io/)
 
 
 ## Overview
-+ Install: see how to set the playground environment
++ Install: 
+  + see playground about how to set the playground environment
+  + change the `CMakeLists.txt` file `OpenGL_PATH` to where we can find the library
 + Run: 
     ```Bash
     mkdir build
@@ -17,4 +19,4 @@ Learn OpenGL from [LearnOpenGL CN](https://learnopengl-cn.github.io/)
 
 
 ## Reference
-[LearnOpenGL CN](https://learnopengl-cn.github.io/)
++ [LearnOpenGL CN](https://learnopengl-cn.github.io/)
