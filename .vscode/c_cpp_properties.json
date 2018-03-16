@@ -51,9 +51,13 @@
                     "/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed",
                     "/usr/include/x86_64-linux-gnu",
                     "/usr/include",
+                    "/home/jskyzero/workspace/OpenGl/glfw/include",
+                    "/home/jskyzero/workspace/OpenGl/glfw/src",
+                    "/home/jskyzero/workspace/OpenGl/glad/include",
+                    "/home/jskyzero/workspace/OpenGl/glad/src",
                     "${workspaceRoot}"
                 ],
-                "limitSymbolsToIncludedHeaders": true,
+                "limitSymbolsToIncludedHeaders": false,
                 "databaseFilename": ""
             }
         },

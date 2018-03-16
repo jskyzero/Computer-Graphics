@@ -1,5 +1,5 @@
-#ifndef __HARDWAY_HPP__
-#define __HARDWAY_HPP__
+#ifndef __CREATE_WINDOW__
+#define __CREATE_WINDOW__
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -7,6 +7,7 @@
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+
+void process_input(GLFWwindow* window);
 
 #endif
