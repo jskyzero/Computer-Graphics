@@ -1,2 +1,9 @@
-add_executable (create_window create_window.cpp)
-target_link_libraries (create_window glad glfw ${OPENGL_gl_LIBRARY})
+set(file_list create_window;hello_triangle)
+
+# forloop
+foreach(each_file ${file_list})
+
+add_executable (${each_file} ${each_file}.cpp)
+target_link_libraries (${each_file} glad glfw ${OPENGL_gl_LIBRARY})
+
+endforeach(each_file)
