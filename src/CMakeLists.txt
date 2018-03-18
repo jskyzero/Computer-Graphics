@@ -1,4 +1,4 @@
-set(file_list create_window;hello_triangle)
+set(file_list create_window;hello_triangle;hw_triangle)
 
 # forloop
 foreach(each_file ${file_list})
@@ -6,4 +6,4 @@ foreach(each_file ${file_list})
 add_executable (${each_file} ${each_file}.cpp)
 target_link_libraries (${each_file} glad glfw ${OPENGL_gl_LIBRARY})
 
-endforeach(each_file)
+endforeach (each_file)
