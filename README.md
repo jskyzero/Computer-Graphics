@@ -29,6 +29,28 @@ make
 ./src/test.out
 ```
 
+### Microsoft Windows [10.0.16299.248] & Visual Studio 2017
+
+```PowerShell
+# because Microsoft SDK contain opengl32.lib, you don't need install waht
+
+# if you want update GLFW/GLAD
+# download GLFW to glfw folder
+# download GLAD to glad folder
+
+# move to playground dir
+cd playground
+# make build dir
+mkdir build
+cd build
+# cmake
+cmake ..
+# use Visual Studio 2017 Developer Command Prompt here
+MsBuild.exe playground.sln
+# run 
+.\src\Debug\test.out.exe
+```
+
 ## Reference
 + [CMake](https://cmake.org/)
 + [GLFW](http://www.glfw.org)
