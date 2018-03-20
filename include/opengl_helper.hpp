@@ -4,8 +4,8 @@
 #include <glad/glad.h>   // for glad
 #include <GLFW/glfw3.h>  // for glfw
 
-#include <string>  // for std::string
 #include <functional>
+#include <string>  // for std::string
 
 // if you are macOS, please uncomment fellow define code
 // #define IS_MAC_OS
@@ -22,7 +22,9 @@ void initial_glfw();
 void initial_glad();
 // inital opengl
 void initial_opengl(std::function<void(void)> set_window);
-
+// set vao
+void set_vao(GLuint & VAO, GLuint & VBO, GLuint & EBO,
+             std::function<void(GLuint, GLuint, GLuint)> set_buffer);
 
 // check if shader works well
 typedef PFNGLGETSHADERIVPROC CheckShaderHasErrorFunc;

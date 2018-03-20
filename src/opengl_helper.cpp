@@ -30,6 +30,19 @@ void initial_opengl(std::function<void(void)> set_window) {
   initial_glfw();
   set_window();
   initial_glad();
+  glViewport(0, 0, 800, 600);
+}
+
+// set vao
+void set_vao(GLuint & VAO, GLuint & VBO, GLuint & EBO,
+             std::function<void(GLuint, GLuint, GLuint)> set_buffer) {
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  glGenBuffers(1, &EBO);
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  set_buffer(VAO, VBO, EBO);
 }
 
 
