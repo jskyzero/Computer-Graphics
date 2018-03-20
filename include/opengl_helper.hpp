@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>  // for glfw
 
 #include <string>  // for std::string
+#include <functional>
 
 // if you are macOS, please uncomment fellow define code
 // #define IS_MAC_OS
@@ -19,6 +20,9 @@ std::string get_info();
 void initial_glfw();
 // initial glad
 void initial_glad();
+// inital opengl
+void initial_opengl(std::function<void(void)> set_window);
+
 
 // check if shader works well
 typedef PFNGLGETSHADERIVPROC CheckShaderHasErrorFunc;
@@ -34,7 +38,9 @@ GLuint compile_fragment_shader(std::string path);
 GLuint compile_shader(GLenum type, std::string path);
 // create program and link shader
 GLuint create_program_with_shader(GLuint vertex_shader, GLuint fragment_shader);
-
+// create program and link shader with file path
+GLuint create_program_with_shader(std::string vertex_shader_path,
+                                  std::string fragment_shader_path);
 
 // read string from path
 std::string read_string_from_path(std::string path);
@@ -46,6 +52,6 @@ void exit_program();
 void exit_program(int exit_code);
 // exit with error message
 void exit_program(std::string exit_message);
-}
+}  // namespace helper
 
 #endif

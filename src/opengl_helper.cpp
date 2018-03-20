@@ -25,6 +25,14 @@ void initial_glad() {
               "glad load errror");
 }
 
+// inital opengl
+void initial_opengl(std::function<void(void)> set_window) {
+  initial_glfw();
+  set_window();
+  initial_glad();
+}
+
+
 // check if shader works well
 void check_shader_have_error(GLuint id, GLenum type,
                              CheckShaderHasErrorFunc check_has_error,
@@ -36,6 +44,7 @@ void check_shader_have_error(GLuint id, GLenum type,
   get_error_info(id, INFO_LOG_SIZE, NULL, info_log);
   exit_program(info_log);
 }
+
 
 // compile vertex shader
 GLuint compile_vertex_shader(std::string path) {
@@ -65,6 +74,17 @@ GLuint create_program_with_shader(GLuint vertex_shader, GLuint fragment_shader) 
   glAttachShader(program, fragment_shader);
   glLinkProgram(program);
   check_shader_have_error(program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
+  return program;
+}
+
+// create program and link shader with file path
+GLuint create_program_with_shader(std::string vertex_shader_path,
+                                  std::string fragment_shader_path) {
+  GLuint vertex_shader = compile_vertex_shader(vertex_shader_path);
+  GLuint fragment_shader = compile_fragment_shader(fragment_shader_path);
+  GLuint program = create_program_with_shader(vertex_shader, fragment_shader);
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
   return program;
 }
 
