@@ -29,36 +29,47 @@ void initial_glad() {
 }
 
 // initial imgui
-void initial_imgui(GLFWwindow * window) {
+void initial_imgui(GLFWwindow* window) {
   // Setup ImGui binding
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    ImGui_ImplGlfwGL3_Init(window, true);
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  (void)io;
+  // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard
+  // Controls  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable
+  // Gamepad Controls
+  ImGui_ImplGlfwGL3_Init(window, true);
 
-    // Setup style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+  // Setup style
+  ImGui::StyleColorsDark();
+  // ImGui::StyleColorsClassic();
 
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them. 
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple. 
-    // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Read 'misc/fonts/README.txt' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != NULL);
+  // Load Fonts
+  // - If no fonts are loaded, dear imgui will use the default font. You can
+  // also load multiple fonts and use ImGui::PushFont()/PopFont() to select
+  // them.
+  // - AddFontFromFileTTF() will return the ImFont* so you can store it if you
+  // need to select the font among multiple.
+  // - If the file cannot be loaded, the function will return NULL. Please
+  // handle those errors in your application (e.g. use an assertion, or display
+  // an error and quit).
+  // - The fonts will be rasterized at a given size (w/ oversampling) and stored
+  // into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which
+  // ImGui_ImplXXXX_NewFrame below will call.
+  // - Read 'misc/fonts/README.txt' for more instructions and details.
+  // - Remember that in C/C++ if you want to include a backslash \ in a string
+  // literal you need to write a double backslash \\ !
+  // io.Fonts->AddFontDefault();
+  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+  // ImFont* font =
+  // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
+  // NULL, io.Fonts->GetGlyphRangesJapanese());  IM_ASSERT(font != NULL);
 }
 
 // inital opengl
-void initial_opengl(std::function<void(void)> set_window, GLFWwindow* & window) {
+void initial_opengl(std::function<void(void)> set_window, GLFWwindow*& window) {
   initial_glfw();
   set_window();
   initial_glad();
@@ -67,17 +78,17 @@ void initial_opengl(std::function<void(void)> set_window, GLFWwindow* & window) 
 }
 
 // set vao
-void set_vao(GLuint & VAO, GLuint & VBO, GLuint & EBO,
-             std::function<void(GLuint, GLuint, GLuint)> set_buffer) {
+void set_vao(GLuint& VAO, GLuint& VBO, GLuint& EBO,
+             std::function<void(GLuint, GLuint, GLuint)> set_buffer,
+             bool is_buffer_need_initial) {
   glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
+  if (is_buffer_need_initial) glGenBuffers(1, &VBO);
   glGenBuffers(1, &EBO);
   glBindVertexArray(VAO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   set_buffer(VAO, VBO, EBO);
 }
-
 
 // check if shader works well
 void check_shader_have_error(GLuint id, GLenum type,
@@ -90,7 +101,6 @@ void check_shader_have_error(GLuint id, GLenum type,
   get_error_info(id, INFO_LOG_SIZE, NULL, info_log);
   exit_program(info_log);
 }
-
 
 // compile vertex shader
 GLuint compile_vertex_shader(std::string path) {
@@ -109,17 +119,20 @@ GLuint compile_shader(GLenum type, std::string path) {
   const GLchar* source = str.c_str();
   glShaderSource(shader, 1, &source, NULL);
   glCompileShader(shader);
-  check_shader_have_error(shader, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog);
+  check_shader_have_error(shader, GL_COMPILE_STATUS, glGetShaderiv,
+                          glGetShaderInfoLog);
   return shader;
 }
 
 // create program and link shader
-GLuint create_program_with_shader(GLuint vertex_shader, GLuint fragment_shader) {
+GLuint create_program_with_shader(GLuint vertex_shader,
+                                  GLuint fragment_shader) {
   GLuint program = glCreateProgram();
   glAttachShader(program, vertex_shader);
   glAttachShader(program, fragment_shader);
   glLinkProgram(program);
-  check_shader_have_error(program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
+  check_shader_have_error(program, GL_LINK_STATUS, glGetProgramiv,
+                          glGetProgramInfoLog);
   return program;
 }
 
@@ -133,7 +146,6 @@ GLuint create_program_with_shader(std::string vertex_shader_path,
   glDeleteShader(fragment_shader);
   return program;
 }
-
 
 // read string from path
 std::string read_string_from_path(std::string path) {

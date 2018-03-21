@@ -26,7 +26,8 @@ void initial_imgui(GLFWwindow * window);
 void initial_opengl(std::function<void(void)> set_window, GLFWwindow*  & window);
 // set vao
 void set_vao(GLuint & VAO, GLuint & VBO, GLuint & EBO,
-             std::function<void(GLuint, GLuint, GLuint)> set_buffer);
+             std::function<void(GLuint, GLuint, GLuint)> set_buffer,
+             bool is_buffer_need_initial = true);
 
 // check if shader works well
 typedef PFNGLGETSHADERIVPROC CheckShaderHasErrorFunc;
