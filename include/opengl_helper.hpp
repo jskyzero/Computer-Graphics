@@ -20,8 +20,10 @@ std::string get_info();
 void initial_glfw();
 // initial glad
 void initial_glad();
+// initial imgui
+void initial_imgui(GLFWwindow * window);
 // inital opengl
-void initial_opengl(std::function<void(void)> set_window);
+void initial_opengl(std::function<void(void)> set_window, GLFWwindow*  & window);
 // set vao
 void set_vao(GLuint & VAO, GLuint & VBO, GLuint & EBO,
              std::function<void(GLuint, GLuint, GLuint)> set_buffer);
