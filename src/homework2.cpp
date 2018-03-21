@@ -28,7 +28,7 @@ int main() {
   GLFWwindow* window;
 
   auto initial_window = [&window] {
-    window = glfwCreateWindow(800, 600, "Hello Triangle", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "homework2", NULL, NULL);
     helper::assert_true(window != NULL, "Failed to create GLFW windows");
     glfwMakeContextCurrent(window);
   };

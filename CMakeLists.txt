@@ -1,10 +1,12 @@
-project (HardWay)
+project (homework2)
 cmake_minimum_required (VERSION 3.1)
 
 set (CMAKE_CXX_STANDARD 11)
 set (OPENGL_PATH /home/jskyzero/workspace/OpenGl)
 
-set (CMAKE_CXX_FLAGS "-Wall")
+# in linux, you can uncomment this warn setting
+# set (CMAKE_CXX_FLAGS "-Wall")
+
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/)
 
 # GLFW
