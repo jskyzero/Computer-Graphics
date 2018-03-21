@@ -65,6 +65,9 @@
             "name": "Win32",
             "includePath": [
                 "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                "C:/Users/jskyzero/workspace/playground/OpenGL/glad/include",
+                "C:/Users/jskyzero/workspace/playground/OpenGL/glfw/include",
+                "C:/Users/jskyzero/workspace/playground/OpenGL/imgui",
                 "${workspaceRoot}"
             ],
             "defines": [
@@ -76,9 +79,14 @@
             "browse": {
                 "path": [
                     "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include/*",
+                    "C:/Users/jskyzero/workspace/playground/OpenGL/glad/include",
+                    "C:/Users/jskyzero/workspace/playground/OpenGL/glfw/include",
+                    "C:/Users/jskyzero/workspace/playground/OpenGL/glad/src",
+                    "C:/Users/jskyzero/workspace/playground/OpenGL/glfw/src",
+                    "C:/Users/jskyzero/workspace/playground/OpenGL/imgui",
                     "${workspaceRoot}"
                 ],
-                "limitSymbolsToIncludedHeaders": true,
+                "limitSymbolsToIncludedHeaders": false,
                 "databaseFilename": ""
             }
         }
