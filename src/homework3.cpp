@@ -18,7 +18,7 @@ int main() {
 
   int width = 800, height = 600;
   bool show_circle = false, fill = false;
-  float point_spacing = 0.001, radius = 0.5;
+  float point_spacing = 0.001f, radius = 0.5f;
 
   auto initial_window = [&] {
     window = glfwCreateWindow(width, height, "homework3", NULL, NULL);
@@ -52,9 +52,9 @@ int main() {
       ImGui::SliderFloat2("Vertex 3", vertexs.data() + 6, -1, 1);
     } else {
       ImGui::SliderFloat2("Certer 1", vertexs.data(), -1, 1);
-      ImGui::SliderFloat("Radius", &radius, 0.001, 1);
+      ImGui::SliderFloat("Radius", &radius, 0.001f, 1);
     }
-    ImGui::SliderFloat("Point Space", &point_spacing, 0.001, 0.1);
+    ImGui::SliderFloat("Point Space", &point_spacing, 0.001f, 0.1f);
     ImGui::End();
   };
 
