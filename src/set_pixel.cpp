@@ -5,8 +5,8 @@ int main(int argc, const char * argv[]) {
         return -1;
     }
 
-    int width = 200;    //screen width
-    int height = 200;   //screen height
+    int width = 1600;    //screen width
+    int height = 900;   //screen height
 
     GLFWwindow* window = glfwCreateWindow(width, height, "Hello OpenGL", NULL, NULL);  //create window
 
@@ -26,6 +26,18 @@ int main(int argc, const char * argv[]) {
 
             pixels[index * 4 + 0] = 255;    //red pixel
             pixels[index * 4 + 1] = 0;      //green
+            pixels[index * 4 + 2] = 0;      //blue
+            pixels[index * 4 + 3] = 255;    //alpha
+        }
+    }
+
+    //set pixel
+    for (int count_a = 1000; count_a < width; count_a++) {
+        for (int count_b = 600; count_b < height; count_b++) {
+            index = count_b * width + count_a;
+
+            pixels[index * 4 + 0] = 0;    //red pixel
+            pixels[index * 4 + 1] = 255;      //green
             pixels[index * 4 + 2] = 0;      //blue
             pixels[index * 4 + 3] = 255;    //alpha
         }
