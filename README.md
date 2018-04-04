@@ -17,6 +17,13 @@ Learn OpenGL from [LearnOpenGL CN](https://learnopengl-cn.github.io/)
     make
     ```
 
+## Structure
+
++ create_window
++ hello_triangle
++ hw_triangle
++ set_pixel
+
 
 ## Reference
 + [LearnOpenGL CN](https://learnopengl-cn.github.io/)

@@ -1,4 +1,4 @@
-set(file_list create_window;hello_triangle;hw_triangle)
+set(file_list create_window;hello_triangle;hw_triangle;set_pixel)
 
 # forloop
 foreach(each_file ${file_list})
