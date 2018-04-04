@@ -19,9 +19,9 @@ Learn OpenGL from [LearnOpenGL CN](https://learnopengl-cn.github.io/)
 
 ## Structure
 
-+ create_window
++ hello_window
 + hello_triangle
-+ hw_triangle
++ hello_triangle_hw
 + set_pixel
 
 

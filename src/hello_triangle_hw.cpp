@@ -1,4 +1,4 @@
-#include <hw_triangle.hpp>
+#include <hello_triangle_hw.hpp>
 
 GLfloat vertices[] = {
     0.5f, 0.5f, 0.0f,   // 右上角
