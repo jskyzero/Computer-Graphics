@@ -38,7 +38,8 @@
                 "${workspaceRoot}/include",
                 "/home/jskyzero/workspace/OpenGl/glfw/include",
                 "/home/jskyzero/workspace/OpenGl/glad/include",
-                "/home/jskyzero/workspace/OpenGl/imgui"
+                "/home/jskyzero/workspace/OpenGl/imgui",
+                "/home/jskyzero/workspace/OpenGl/glm"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -57,6 +58,7 @@
                     "/home/jskyzero/workspace/OpenGl/glad/include",
                     "/home/jskyzero/workspace/OpenGl/glad/src",
                     "/home/jskyzero/workspace/OpenGl/imgui",
+                    "/home/jskyzero/workspace/OpenGl/glm",
                     "${workspaceRoot}"
                 ],
                 "limitSymbolsToIncludedHeaders": false,

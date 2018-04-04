@@ -5,8 +5,11 @@
 #include <iostream>  // for std::cout
 #include <sstream>   // for std::stringstream
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
+
 
 namespace helper {
 std::string get_info() { return "OpenGL Helper by jskyzero"; }
@@ -17,8 +20,10 @@ void initial_glfw() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef IS_MAC_OS
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#ifdef __APPLE__
+  glfwWindowHint(
+      GLFW_OPENGL_FORWARD_COMPAT,
+      GL_TRUE);  // uncomment this statement to fix compilation on OS X
 #endif
 }
 
@@ -146,6 +151,46 @@ GLuint create_program_with_shader(std::string vertex_shader_path,
   glDeleteShader(fragment_shader);
   return program;
 }
+
+// create texture with file path
+void create_texture(GLuint & texture, std::string file_path) {
+  // load and create a texture
+  // -------------------------
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);  // all upcoming GL_TEXTURE_2D
+                                          // operations now have effect on this
+                                          // texture object
+  // set the texture wrapping parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                  GL_REPEAT);  // set texture wrapping to GL_REPEAT (default
+                               // wrapping method)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  // set texture filtering parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  // load image, create texture and generate mipmaps
+  int width, height, nrChannels;
+  // tell stb_image.h to flip loaded texture's on the y-axis.
+  stbi_set_flip_vertically_on_load(false);
+  // std::string str = read_string_from_path(file_path);
+  unsigned char* data = stbi_load(file_path.c_str(), &width, &height, &nrChannels, 0);
+  assert_true(data, "Failed to load texture " + file_path);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  stbi_image_free(data);
+}
+// set int
+void set_shader_int(GLuint id, const std::string & name, int value) {
+  glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+}
+// set mat4
+void set_shader_mat4(GLuint id, const std::string &name, const glm::mat4 &mat) {
+  // std::cout << glm::to_string(mat) << std::endl;
+  glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+}
+
+
 
 // read string from path
 std::string read_string_from_path(std::string path) {

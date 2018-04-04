@@ -3,6 +3,9 @@
 
 #include <glad/glad.h>   // for glad
 #include <GLFW/glfw3.h>  // for glfw
+#include <glm/glm.hpp>
+// #define GLM_ENABLE_EXPERIMENTAL
+// #include <glm/gtx/string_cast.hpp>
 
 #include <functional>
 #include <string>  // for std::string
@@ -46,6 +49,12 @@ GLuint create_program_with_shader(GLuint vertex_shader, GLuint fragment_shader);
 // create program and link shader with file path
 GLuint create_program_with_shader(std::string vertex_shader_path,
                                   std::string fragment_shader_path);
+// create texture with file path
+void create_texture(GLuint & texture, std::string file_path);
+// set int
+void set_shader_int(GLuint id, const std::string & name, int value);
+// set mat4
+void set_shader_mat4(GLuint id, const std::string &name, const glm::mat4 &mat);
 
 // read string from path
 std::string read_string_from_path(std::string path);
