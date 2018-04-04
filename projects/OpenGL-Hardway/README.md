@@ -1,4 +1,4 @@
-# OpenGL-HardWay
+# OpenGL-Hardway
 `jskzyero` `2018/03/15`
 
 
