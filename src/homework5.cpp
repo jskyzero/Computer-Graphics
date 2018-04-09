@@ -47,7 +47,7 @@ int main() {
   //     glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
 
   auto initial_window = [&window, width, height] {
-    window = glfwCreateWindow(width, height, "homework4", NULL, NULL);
+    window = glfwCreateWindow(width, height, "homework5", NULL, NULL);
     helper::assert_true(window != NULL, "Failed to create GLFW windows");
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);

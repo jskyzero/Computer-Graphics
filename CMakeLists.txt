@@ -2,7 +2,14 @@ project (homework5)
 cmake_minimum_required (VERSION 3.1)
 
 set (CMAKE_CXX_STANDARD 14)
-set (OPENGL_PATH /home/jskyzero/workspace/OpenGl)
+
+if (UNIX)
+  set (OPENGL_PATH /home/jskyzero/workspace/OpenGl)
+endif (UNIX)
+
+if (MSVC)
+  set (OPENGL_PATH ../OpenGl)
+endif (MSVC)
 
 # in linux, you can uncomment this warn setting
 # set (CMAKE_CXX_FLAGS "-Wall")
