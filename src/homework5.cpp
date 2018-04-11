@@ -14,7 +14,8 @@ int main() {
   GLFWwindow* window;
   GLuint point_vao[3];
   int width = 800, height = 600;
-  float input_values[9]{0.0f};
+  constexpr glm::vec3 initial_position = glm::vec3(-1.5f, 0.5f, -1.5f);
+
   std::vector<GLfloat> vertices{
       -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
       0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
@@ -39,12 +40,6 @@ int main() {
       -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
       0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
       -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f};
-  // std::vector<glm::vec3> cubePositions{
-  //     glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
-  //     glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
-  //     glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
-  //     glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
-  //     glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
 
   auto initial_window = [&window, width, height] {
     window = glfwCreateWindow(width, height, "homework5", NULL, NULL);
@@ -75,9 +70,6 @@ int main() {
     ImGui::Text("Welcome");
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::SliderFloat2("translate", input_values, -1.0f, 1.0f);
-    ImGui::SliderFloat("scaling", input_values + 2, -1.0f, 1.0f);
-    ImGui::SliderFloat3("rotate", input_values + 3, -180.0f, 180.0f);
     ImGui::End();
   };
 
@@ -122,15 +114,13 @@ int main() {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(
-        model, glm::vec3(input_values[0], input_values[1], input_values[2]));
-    model = glm::rotate(model, glm::radians(input_values[3]), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(input_values[4]), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(input_values[5]), glm::vec3(0.0f, 0.0f, 1.0f));
+    // model = glm::translate(model, initial_position);
 
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(45.0f),
-                                  (float)width / (float)height, 0.1f, 100.0f);
+    // projection = glm::perspective(glm::radians(45.0f),
+    //                               (float)width / (float)height, 0.1f, 100.0f);
+    // 多组(left, right, bottom, top, near, far)
+    projection = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 0.1f, 10.0f);
     // pass transformation matrices to the shader
     helper::set_shader_mat4(coordinate_systems_shader_program, "projection",
                             projection);
