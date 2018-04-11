@@ -88,7 +88,7 @@ int main() {
   };
   // ImGui input values
   bool orthographic_projection = false, perspective_projection = false,
-       view_changing = false, input_move = true;
+       view_changing = false, input_move = false;
   // 多组(left, right, bottom, top, near, far)
   float orth_left = -2.0f, orth_right = 2.0f, orth_bottom = -2.0f,
         orth_top = 2.0f, orth_near = 0.1f, orth_far = 10.0f, pers_fov = 45.0,
