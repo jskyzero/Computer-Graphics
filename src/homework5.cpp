@@ -1,21 +1,26 @@
-#include <iostream>
+#include <iostream>   // basic input output
 
-#include <homework5.hpp>
-#include <opengl_helper.hpp>
-
-#include <glm/glm.hpp>
+#include <homework5.hpp>  // header file
+#include <opengl_helper.hpp>  // helper library
+// glm library
+#include <glm/glm.hpp>  
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+// imgui library
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
 
-int main() {
-  GLFWwindow* window;
-  GLuint point_vao[3];
-  int width = 800, height = 600;
-  constexpr glm::vec3 initial_position = glm::vec3(-1.5f, 0.5f, -1.5f);
+constexpr glm::vec3 initial_position_k = glm::vec3(-1.5f, 0.5f, -1.5f);
 
+int main() {
+  // the GLFW window
+  GLFWwindow* window;
+  // save the vao vbo eao
+  GLuint point_vao[3];
+  // store window size
+  int width = 800, height = 600;
+
+  // basic vertices
   std::vector<GLfloat> vertices{
       -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
       0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
@@ -41,15 +46,16 @@ int main() {
       0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
       -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f};
 
+  // dirty work initial
   auto initial_window = [&window, width, height] {
     window = glfwCreateWindow(width, height, "homework5", NULL, NULL);
     helper::assert_true(window != NULL, "Failed to create GLFW windows");
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   };
-
+  // if we need update vao's vbo / eao
   auto update_point_vao = []() {};
-
+  // initial vao
   auto set_point_vao = [update_point_vao, &vertices](GLuint VAO, GLuint VBO,
                                                      GLuint EBO) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(),
@@ -64,7 +70,7 @@ int main() {
     glEnableVertexAttribArray(1);
     update_point_vao();
   };
-
+  // imgui
   auto create_imgui = [&]() {
     ImGui::Begin("Menu");
     ImGui::Text("Welcome");
@@ -72,6 +78,10 @@ int main() {
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
   };
+
+  //
+  // main part
+  //
 
   helper::initial_opengl(initial_window, window);
   // enable depth
@@ -114,7 +124,7 @@ int main() {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
-    // model = glm::translate(model, initial_position);
+    // model = glm::translate(model, initial_position_k);
 
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     // projection = glm::perspective(glm::radians(45.0f),
