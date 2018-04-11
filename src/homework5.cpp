@@ -1,9 +1,9 @@
-#include <iostream>   // basic input output
+#include <iostream>  // basic input output
 
-#include <homework5.hpp>  // header file
+#include <homework5.hpp>      // header file
 #include <opengl_helper.hpp>  // helper library
 // glm library
-#include <glm/glm.hpp>  
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 // imgui library
@@ -70,12 +70,25 @@ int main() {
     glEnableVertexAttribArray(1);
     update_point_vao();
   };
+  // ImGui input values
+  bool projection = true, orthographic_projection = true,
+       perspective_projection = false, view_changing = false;
+  // 多组(left, right, bottom, top, near, far)
+  float orth_left = -2.0f, orth_right = 2.0f, orth_bottom = -2.0f,
+        orth_top = 2.0f, orth_near = 0.1f, orth_far = 10.0f, pers_fov = 45.0,
+        pers_near = 0.1f, pers_far = 10.0f;
   // imgui
   auto create_imgui = [&]() {
     ImGui::Begin("Menu");
     ImGui::Text("Welcome");
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::CheckBox("projection", &projection)
+    if (projection) {
+      ImGui::CheckBox("projection", &orthographic_projection);
+      ImGui::CheckBox("projection", &perspective_projection);
+    }
+    ImGui::CheckBox("projection", &view_changing)
     ImGui::End();
   };
 
@@ -87,19 +100,23 @@ int main() {
   // enable depth
   glEnable(GL_DEPTH_TEST);
 
+  // create shader program
   GLuint coordinate_systems_shader_program = helper::create_program_with_shader(
       "../resources/shaders/coordinate_systems.vs.glsl",
       "../resources/shaders/coordinate_systems.fs.glsl");
   GLuint simple_shader_program =
       helper::create_program_with_shader("../resources/shaders/simple.vs.glsl",
                                          "../resources/shaders/simple.fs.glsl");
+  // create texture
   GLuint eye_texture, box_texture;
   helper::create_texture(eye_texture, "../resources/textures/eye.jpg");
   helper::create_texture(box_texture, "../resources/textures/box_texture.jpeg");
-
+  // set shader
   glUseProgram(coordinate_systems_shader_program);
+  // set texture
   helper::set_shader_int(coordinate_systems_shader_program, "texture1", 0);
   helper::set_shader_int(coordinate_systems_shader_program, "texture2", 1);
+  // set vao
   helper::set_vao(point_vao[0], point_vao[1], point_vao[2], set_point_vao);
 
   while (!glfwWindowShouldClose(window)) {
@@ -128,7 +145,8 @@ int main() {
 
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     // projection = glm::perspective(glm::radians(45.0f),
-    //                               (float)width / (float)height, 0.1f, 100.0f);
+    //                               (float)width / (float)height, 0.1f,
+    //                               100.0f);
     // 多组(left, right, bottom, top, near, far)
     projection = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 0.1f, 10.0f);
     // pass transformation matrices to the shader
