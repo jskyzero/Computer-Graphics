@@ -9,6 +9,17 @@
   + The science and technology of modeling, processing and displaying objects in the world in a computer.
 
 ## Structure
+```
+.
+├── 1 - Learning about CG
+├── 2 - GUI and Draw simple graphics
+├── 3 - Draw line
+├── 4 - Transformation
+├── 5 - Camera
+├── build
+├── docs
+├── projects
+└── README.md
+```
 
 ## Reference
-

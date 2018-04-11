@@ -35,9 +35,11 @@
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
                 "${workspaceRoot}",
-                "${workspaceRoot}/playground/include",
-                "${workspaceRoot}/glad/include",
-                "${workspaceRoot}/glfw/include"
+                "${workspaceRoot}/include",
+                "/home/jskyzero/workspace/OpenGl/glfw/include",
+                "/home/jskyzero/workspace/OpenGl/glad/include",
+                "/home/jskyzero/workspace/OpenGl/imgui",
+                "/home/jskyzero/workspace/OpenGl/glm"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -51,9 +53,15 @@
                     "/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed",
                     "/usr/include/x86_64-linux-gnu",
                     "/usr/include",
+                    "/home/jskyzero/workspace/OpenGl/glfw/include",
+                    "/home/jskyzero/workspace/OpenGl/glfw/src",
+                    "/home/jskyzero/workspace/OpenGl/glad/include",
+                    "/home/jskyzero/workspace/OpenGl/glad/src",
+                    "/home/jskyzero/workspace/OpenGl/imgui",
+                    "/home/jskyzero/workspace/OpenGl/glm",
                     "${workspaceRoot}"
                 ],
-                "limitSymbolsToIncludedHeaders": true,
+                "limitSymbolsToIncludedHeaders": false,
                 "databaseFilename": ""
             },
             "compilerPath": "/usr/bin/gcc",
