@@ -11,7 +11,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
 
-constexpr glm::vec3 initial_position_k = glm::vec3(-1.5f, 0.5f, -1.5f);
+const glm::vec3 initial_position_k = glm::vec3(-1.5f, 0.5f, -1.5f);
 constexpr unsigned int SCR_WIDTH = 800;
 constexpr unsigned int SCR_HEIGHT = 600;
 
