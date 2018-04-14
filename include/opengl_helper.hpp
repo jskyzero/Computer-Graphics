@@ -1,73 +1,66 @@
 #ifndef __OPENGL_HELPER__
 #define __OPENGL_HELPER__
 
-#include <glad/glad.h>   // for glad
-#include <GLFW/glfw3.h>  // for glfw
+/*
+ * ┌───────────────────────────────────────────────────────────────────────────┐
+ * |                                                                           |
+ * |                               OpenGL Helper                               |
+ * ╠═══════════════════════════════════════════════════════════════════════════╣
+ * |                                                            jskyzero 2018  |
+ * └───────────────────────────────────────────────────────────────────────────┘
+ *
+ *
+ * 1.Introdution
+ * OpenGL Helper is a help header file library, It contails many useful
+ * functions when you use OpenGl.
+ *
+ * 2.Requirment
+ * Require Library:
+ *  GLFW
+ *  GLAD
+ *  GLM
+ *  stb_image
+ *  imgui(optional) -> not use please #define NOT_USE_IMGUI
+ *
+ */
+
+
+// for glad, initial function pointer address(maybe
+#include <glad/glad.h>
+// for glfw, a OpenGL, OpenGL ES and Vulkan library
+#include <GLFW/glfw3.h>
+// for glm, OpenGL Mathematics
 #include <glm/glm.hpp>
 // #define GLM_ENABLE_EXPERIMENTAL
 // #include <glm/gtx/string_cast.hpp>
 
-#include <cstdlib>   // for exit
-#include <fstream>   // for std::ifstream
-#include <sstream>   // for std::stringstream
-#include <iostream>  // for std::cout
-#include <functional> // for function
-
+// for stb_image, a image loader
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include "imgui.h"
-#include "imgui_impl_glfw_gl3.h"
 
-// if you are macOS, please uncomment fellow define code
-// #define IS_MAC_OS
+#ifndef NOT_USE_IMGUI
+  // for imgui, a c++ ui library
+  #include "imgui.h"
+  #include "imgui_impl_glfw_gl3.h"
+#endif
+
+#include <cstdlib>     // for exit
+#include <fstream>     // for std::ifstream
+#include <functional>  // for function
+#include <iostream>    // for std::cout
+#include <sstream>     // for std::stringstream
+
 #define INFO_LOG_SIZE 512
 
 // namespace helper
 namespace helper {
 
-// // initial opengl
-// void initial_glfw();
-// // initial glad
-// void initial_glad();
-// // initial imgui
-// void initial_imgui(GLFWwindow *window);
-// // inital opengl
-// void initial_opengl(std::function<void(void)> set_window, GLFWwindow *&window);
-// // set vao
-// void set_vao(GLuint &VAO, GLuint &VBO, GLuint &EBO,
-//              std::function<void(GLuint, GLuint, GLuint)> set_buffer,
-//              bool is_buffer_need_initial = true);
-
-// // check if shader works well
-// typedef PFNGLGETSHADERIVPROC CheckShaderHasErrorFunc;
-// typedef PFNGLGETSHADERINFOLOGPROC GetShaderErrorMessageFunc;
-// void check_shader_have_error(GLuint id, GLenum type,
-//                              CheckShaderHasErrorFunc check_has_error,
-//                              GetShaderErrorMessageFunc get_error_info);
-// // compile vertex shader
-// GLuint compile_vertex_shader(std::string path);
-// // compile fragment shader
-// GLuint compile_fragment_shader(std::string path);
-// // compile shader
-// GLuint compile_shader(GLenum type, std::string path);
-// // create program and link shader
-// GLuint create_program_with_shader(GLuint vertex_shader, GLuint fragment_shader);
-// // create program and link shader with file path
-// GLuint create_program_with_shader(std::string vertex_shader_path,
-//                                   std::string fragment_shader_path);
-// // create texture with file path
-// void create_texture(GLuint &texture, std::string file_path);
-// // set int
-// void set_shader_int(GLuint id, const std::string &name, int value);
-// // set mat4
-// void set_shader_mat4(GLuint id, const std::string &name, const glm::mat4 &mat);
-
-/* 
- * 
+/*
+ *
  * COMMON FUNCTIONS
- * 
- * 
- * 
+ *
+ *
+ *
  * */
 
 // return some info
@@ -116,14 +109,12 @@ std::string read_string_from_path(std::string path) {
   return ss.str();
 }
 
-
-
-/* 
- * 
+/*
+ *
  * OPENGL FUNCTIONS
- * 
- * 
- * 
+ *
+ *
+ *
  * */
 
 // initial opengl
@@ -132,11 +123,11 @@ void initial_glfw() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-  glfwWindowHint(
-      GLFW_OPENGL_FORWARD_COMPAT,
-      GL_TRUE);  // uncomment this statement to fix compilation on OS X
-#endif
+  #ifdef __APPLE__
+    glfwWindowHint(
+        GLFW_OPENGL_FORWARD_COMPAT,
+        GL_TRUE);  // uncomment this statement to fix compilation on OS X
+  #endif
 }
 
 // initial glad
@@ -144,6 +135,8 @@ void initial_glad() {
   assert_true(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) != 0,
               "glad load errror");
 }
+
+#ifndef NOT_USE_IMGUI
 
 // initial imgui
 void initial_imgui(GLFWwindow* window) {
@@ -185,12 +178,16 @@ void initial_imgui(GLFWwindow* window) {
   // NULL, io.Fonts->GetGlyphRangesJapanese());  IM_ASSERT(font != NULL);
 }
 
+#endif
+
 // inital opengl
 void initial_opengl(std::function<void(void)> set_window, GLFWwindow*& window) {
   initial_glfw();
   set_window();
   initial_glad();
-  initial_imgui(window);
+  #ifndef NOT_USE_IMGUI
+    initial_imgui(window);
+  #endif
   glViewport(0, 0, 800, 600);
 }
 
@@ -268,7 +265,7 @@ GLuint create_program_with_shader(std::string vertex_shader_path,
 }
 
 // create texture with file path
-void create_texture(GLuint & texture, std::string file_path) {
+void create_texture(GLuint& texture, std::string file_path) {
   // load and create a texture
   // -------------------------
   glGenTextures(1, &texture);
@@ -288,7 +285,8 @@ void create_texture(GLuint & texture, std::string file_path) {
   // tell stb_image.h to flip loaded texture's on the y-axis.
   stbi_set_flip_vertically_on_load(false);
   // std::string str = read_string_from_path(file_path);
-  unsigned char* data = stbi_load(file_path.c_str(), &width, &height, &nrChannels, 0);
+  unsigned char* data =
+      stbi_load(file_path.c_str(), &width, &height, &nrChannels, 0);
   assert_true(data, "Failed to load texture " + file_path);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                GL_UNSIGNED_BYTE, data);
@@ -296,15 +294,15 @@ void create_texture(GLuint & texture, std::string file_path) {
   stbi_image_free(data);
 }
 // set int
-void set_shader_int(GLuint id, const std::string & name, int value) {
+void set_shader_int(GLuint id, const std::string& name, int value) {
   glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 }
 // set mat4
-void set_shader_mat4(GLuint id, const std::string &name, const glm::mat4 &mat) {
+void set_shader_mat4(GLuint id, const std::string& name, const glm::mat4& mat) {
   // std::cout << glm::to_string(mat) << std::endl;
-  glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+  glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE,
+                     &mat[0][0]);
 }
-
 
 }  // namespace helper
 

@@ -84,39 +84,13 @@ int main() {
     glEnableVertexAttribArray(1);
     update_point_vao();
   };
-  // ImGui input values
-  bool orthographic_projection = false, perspective_projection = false,
-       view_changing = false, input_move = false;
-  // 多组(left, right, bottom, top, near, far)
-  float orth_left = -2.0f, orth_right = 2.0f, orth_bottom = -2.0f,
-        orth_top = 2.0f, orth_near = 0.1f, orth_far = 10.0f, pers_fov = 45.0,
-        pers_near = 0.1f, pers_far = 10.0f;
+
   // imgui
   auto create_imgui = [&]() {
     ImGui::Begin("Menu");
     ImGui::Text("Welcome");
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::Checkbox("orthographic projection", &orthographic_projection);
-    if (orthographic_projection) {
-      perspective_projection = false;
-      ImGui::SliderFloat("orth_left", &orth_left, -10.0f, 10.0f);
-      ImGui::SliderFloat("orth_right", &orth_right, -10.0f, 10.0f);
-      ImGui::SliderFloat("orth_bottom", &orth_bottom, -10.0f, 10.0f);
-      ImGui::SliderFloat("orth_top", &orth_top, -10.0f, 10.0f);
-      ImGui::SliderFloat("orth_near", &orth_near, -0.0f, 1.0f);
-      ImGui::SliderFloat("orth_far", &orth_far, 1.0f, 20.0f);
-    }
-
-    ImGui::Checkbox("perspective projection", &perspective_projection);
-    if (perspective_projection) {
-      orthographic_projection = false;
-      ImGui::SliderFloat("pers_fov", &pers_fov, -90.0f, 90.0f);
-      ImGui::SliderFloat("orth_near", &pers_near, -0.0f, 10.0f);
-      ImGui::SliderFloat("pers_far", &pers_far, 1.0f, 200.0f);
-    }
-    ImGui::Checkbox("view changing", &view_changing);
-    ImGui::Checkbox("input move", &input_move);
     ImGui::End();
   };
 
@@ -174,32 +148,22 @@ int main() {
     glm::mat4 model = glm::mat4(1.0f);
     // set default position
     model = glm::translate(model, initial_position_k);
-    if (orthographic_projection) {
-      // 多组(left, right, bottom, top, near, far)
-      projection = glm::ortho(orth_left, orth_right, orth_bottom, orth_top,
-                              orth_near, orth_far);
-    }
-    if (perspective_projection) {
-      projection =
-          glm::perspective(glm::radians(pers_fov), (float)width / (float)height,
-                           pers_near, pers_far);
-    }
+
     // if set view
-    if (view_changing) {
-      model = glm::mat4(1.0f);
-      float radius = 10.0f;
-      float camX = sin(glfwGetTime()) * radius;
-      float camZ = cos(glfwGetTime()) * radius;
-      view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
-                         glm::vec3(0.0, 1.0, 0.0));
-    }
-    if (input_move) {
-      model = glm::mat4(1.0f);
-      // pass projection matrix to shader (note that in this case it could change every frame)
-      projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-      // camera/view transformation
-      view = camera.GetViewMatrix();
-    }
+    model = glm::mat4(1.0f);
+    float radius = 10.0f;
+    float camX = sin(glfwGetTime()) * radius;
+    float camZ = cos(glfwGetTime()) * radius;
+    view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
+                        glm::vec3(0.0, 1.0, 0.0));
+
+    model = glm::mat4(1.0f);
+    model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    // pass projection matrix to shader (note that in this case it could change every frame)
+    projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    // camera/view transformation
+    view = camera.GetViewMatrix();
 
     // pass transformation matrices to the shader
     helper::set_shader_mat4(coordinate_systems_shader_program, "projection",
