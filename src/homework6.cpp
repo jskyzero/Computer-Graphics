@@ -7,9 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-// imgui library
-#include "imgui.h"
-#include "imgui_impl_glfw_gl3.h"
+
 
 const glm::vec3 initial_position_k = glm::vec3(-1.5f, 0.5f, -1.5f);
 constexpr unsigned int SCR_WIDTH = 800;
