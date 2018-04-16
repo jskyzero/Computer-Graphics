@@ -1,0 +1,40 @@
+language: cpp
+
+os:
+  - linux
+  # - osx
+
+compiler:
+  - g++
+  # - clang
+
+branches:
+    only:
+        - master
+sudo: true
+addons:
+    apt:
+        sources:
+            - kubuntu-backports
+        packages:
+            - cmake
+
+env:
+  - TEST_DIR="2 - GUI and Draw simple graphics"
+  - TEST_DIR="3 - Draw line"
+  - TEST_DIR="4 - Transformation"
+  - TEST_DIR="5 - Camera"
+
+
+# so ugly, but it works
+before_install:
+  - mkdir jskyzero workspace
+  - mv workspace jskyzero
+  - mv projects/OpenGL-Playground jskyzero/workspace/OpenGL
+  - sudo mv jskyzero /home
+  - sudo apt-get install libgl1-mesa-dev xorg-dev libglu1-mesa-dev libx11-dev
+
+script: 
+  - cd "$TEST_DIR"
+  - mkdir build && cd build
+  - cmake .. && make
