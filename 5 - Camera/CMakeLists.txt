@@ -4,11 +4,11 @@ cmake_minimum_required (VERSION 3.1)
 set (CMAKE_CXX_STANDARD 14)
 
 if (UNIX)
-  set (OPENGL_PATH /home/jskyzero/workspace/OpenGl)
+  set (OPENGL_PATH /home/jskyzero/workspace/OpenGL)
 endif (UNIX)
 
 if (MSVC)
-  set (OPENGL_PATH ../OpenGl)
+  set (OPENGL_PATH ../OpenGL)
 endif (MSVC)
 
 # in linux, you can uncomment this warn setting

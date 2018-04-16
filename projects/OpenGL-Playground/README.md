@@ -1,6 +1,9 @@
 # OpenGL-Playground
 `jskyzero` `2017/03/14`
 
+[![Build Status](https://travis-ci.org/jskyzero/Computer-Graphics.svg?branch=master)](https://travis-ci.org/jskyzero/Computer-Graphics)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jskyzero/Computer-Graphics/issues)
+
 ## Overview
 
 a OpenGL envirment that you can play with
