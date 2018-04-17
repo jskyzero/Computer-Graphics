@@ -26,7 +26,7 @@
     # linux
     make
     # windows
-    MsBuild.exe homework2.sln
+    MsBuild.exe homework.sln
     ```
   3. run the output binary file
 + If there are questions or errors
