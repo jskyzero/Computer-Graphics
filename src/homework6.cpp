@@ -1,28 +1,28 @@
 #include <iostream>  // basic input output
+#include <memory>    // for make_shared
 
 #include <homework6.hpp>      // header file
-#include <camera.h>
 #include <opengl_helper.hpp>  // helper library
 // glm library
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
-const glm::vec3 initial_position_k = glm::vec3(-1.5f, 0.5f, -1.5f);
-constexpr unsigned int SCR_WIDTH = 800;
-constexpr unsigned int SCR_HEIGHT = 600;
+constexpr unsigned int kScreenWidth = 800;
+constexpr unsigned int kScreenHeight = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+auto camera = std::make_shared<helper::Camera>(glm::vec3(0.0f, 0.0f, 3.0f));
+// make mouse initial position center
+float lastX = kScreenWidth / 2.0f;
+float lastY = kScreenHeight / 2.0f;
 bool firstMouse = true;
-
 // timing
-float deltaTime = 0.0f;	// time between current frame and last frame
+// time between current frame and last frame
+float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-
+// ImGui
+bool canMouseMoveCamera = false;
 
 int main() {
   // the GLFW window
@@ -30,7 +30,7 @@ int main() {
   // save the vao vbo eao
   GLuint point_vao[3];
   // store window size
-  int width = SCR_WIDTH, height = SCR_HEIGHT;
+  int width = kScreenWidth, height = kScreenHeight;
 
   // basic vertices
   std::vector<GLfloat> vertices{
@@ -86,7 +86,7 @@ int main() {
   };
 
   // imgui
-  auto create_imgui = [&]() {
+  auto create_imgui = []() {
     ImGui::Begin("Menu");
     ImGui::Text("Welcome");
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
@@ -94,38 +94,42 @@ int main() {
     ImGui::End();
   };
 
+  auto update_delta = []() {
+    float currentFrame = (float)glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+  };
+
   //
   // main part
   //
 
-  helper::initial_opengl(initial_window, window);
+  helper::InitialOpenGL(initial_window, window);
   // enable depth
   glEnable(GL_DEPTH_TEST);
 
   // create shader program
-  GLuint coordinate_systems_shader_program = helper::create_program_with_shader(
+  GLuint coordinate_systems_shader_program = helper::CreatProgramWithShader(
       "../resources/shaders/coordinate_systems.vs.glsl",
       "../resources/shaders/coordinate_systems.fs.glsl");
   GLuint simple_shader_program =
-      helper::create_program_with_shader("../resources/shaders/simple.vs.glsl",
-                                         "../resources/shaders/simple.fs.glsl");
+      helper::CreatProgramWithShader("../resources/shaders/simple.vs.glsl",
+                                     "../resources/shaders/simple.fs.glsl");
   // create texture
   GLuint eye_texture, box_texture;
-  helper::create_texture(eye_texture, "../resources/textures/eye.jpg");
-  helper::create_texture(box_texture, "../resources/textures/box_texture.jpeg");
+  helper::CreateTexture(eye_texture, "../resources/textures/eye.jpg");
+  helper::CreateTexture(box_texture, "../resources/textures/box_texture.jpeg");
   // set shader
   glUseProgram(coordinate_systems_shader_program);
   // set texture
-  helper::set_shader_int(coordinate_systems_shader_program, "texture1", 0);
-  helper::set_shader_int(coordinate_systems_shader_program, "texture2", 1);
+  helper::SetShaderInt(coordinate_systems_shader_program, "texture1", 0);
+  helper::SetShaderInt(coordinate_systems_shader_program, "texture2", 1);
   // set vao
-  helper::set_vao(point_vao[0], point_vao[1], point_vao[2], set_point_vao);
+  helper::SetVAO(point_vao[0], point_vao[1], point_vao[2], set_point_vao);
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
-    float currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
+    update_delta();
     processInput(window);
     glfwGetWindowSize(window, &width, &height);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -146,30 +150,31 @@ int main() {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
-    // set default position
-    model = glm::translate(model, initial_position_k);
 
     // if set view
     model = glm::mat4(1.0f);
     float radius = 10.0f;
-    float camX = sin(glfwGetTime()) * radius;
-    float camZ = cos(glfwGetTime()) * radius;
+    float camX = (float)sin(glfwGetTime()) * radius;
+    float camZ = (float)cos(glfwGetTime()) * radius;
     view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
-                        glm::vec3(0.0, 1.0, 0.0));
+                       glm::vec3(0.0, 1.0, 0.0));
 
     model = glm::mat4(1.0f);
     model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-    // pass projection matrix to shader (note that in this case it could change every frame)
-    projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    // pass projection matrix to shader (note that in this case it could change
+    // every frame)
+    projection = glm::perspective(glm::radians(camera->Zoom),
+                                  (float)kScreenWidth / (float)kScreenHeight,
+                                  0.1f, 100.0f);
     // camera/view transformation
-    view = camera.GetViewMatrix();
+    view = camera->GetViewMatrix();
 
     // pass transformation matrices to the shader
-    helper::set_shader_mat4(coordinate_systems_shader_program, "projection",
-                            projection);
-    helper::set_shader_mat4(coordinate_systems_shader_program, "view", view);
-    helper::set_shader_mat4(coordinate_systems_shader_program, "model", model);
+    helper::SetShaderMat4(coordinate_systems_shader_program, "projection",
+                          projection);
+    helper::SetShaderMat4(coordinate_systems_shader_program, "view", view);
+    helper::SetShaderMat4(coordinate_systems_shader_program, "model", model);
 
     // render boxes
     glBindVertexArray(point_vao[0]);
@@ -183,57 +188,65 @@ int main() {
   helper::exit_program();
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// process all input: query GLFW whether relevant keys are pressed/released this
+// frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+void processInput(GLFWwindow* window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    camera->ProcessKeyboard(helper::Camera::FORWARD, deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    camera->ProcessKeyboard(helper::Camera::BACKWARD, deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    camera->ProcessKeyboard(helper::Camera::LEFT, deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    camera->ProcessKeyboard(helper::Camera::RIGHT, deltaTime);
+  // if press left alt, then camera can move
+  canMouseMoveCamera = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS;
+  if (canMouseMoveCamera) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  } else {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// glfw: whenever the window size changed (by OS or user resize) this callback
+// function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+  // make sure the viewport matches the new window dimensions; note that width
+  // and height will be significantly larger than specified on retina displays.
+  glViewport(0, 0, width, height);
 }
-
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+  if (!canMouseMoveCamera) return;
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+  if (firstMouse) {
+    lastX = (float)xpos;
+    lastY = (float)ypos;
+    firstMouse = false;
+  }
 
-    lastX = xpos;
-    lastY = ypos;
+  float xoffset = (float)xpos - lastX;
+  float yoffset =
+      lastY -
+      (float)ypos;  // reversed since y-coordinates go from bottom to top
 
-    camera.ProcessMouseMovement(xoffset, yoffset);
+  lastX = (float)xpos;
+  lastY = (float)ypos;
+
+  camera->ProcessMouseMovement(-xoffset, -yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+  if (!canMouseMoveCamera) return;
   std::cout << yoffset << std::endl;
-  camera.ProcessMouseScroll(yoffset);
+  camera->ProcessMouseScroll((float)yoffset);
 }

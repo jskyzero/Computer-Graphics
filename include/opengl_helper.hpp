@@ -31,6 +31,7 @@
 #include <GLFW/glfw3.h>
 // for glm, OpenGL Mathematics
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 // #define GLM_ENABLE_EXPERIMENTAL
 // #include <glm/gtx/string_cast.hpp>
 
@@ -45,10 +46,11 @@
 #endif
 
 #include <cstdlib>     // for exit
-#include <fstream>     // for std::ifstream
-#include <functional>  // for function
 #include <iostream>    // for std::cout
+#include <fstream>     // for std::ifstream
 #include <sstream>     // for std::stringstream
+#include <functional>  // for function
+#include <vector>
 
 #define INFO_LOG_SIZE 512
 
@@ -154,7 +156,7 @@ void initial_imgui(GLFWwindow* window) {
   // ImGui::StyleColorsClassic();
 
   // Load Fonts
-  // - If no fonts are loaded, dear imgui will use the default font. You can
+  // - If no fonts are loaded, dear imgui will use the default_CAMERA font. You can
   // also load multiple fonts and use ImGui::PushFont()/PopFont() to select
   // them.
   // - AddFontFromFileTTF() will return the ImFont* so you can store it if you
@@ -181,7 +183,7 @@ void initial_imgui(GLFWwindow* window) {
 #endif
 
 // inital opengl
-void initial_opengl(std::function<void(void)> set_window, GLFWwindow*& window) {
+void InitialOpenGL(std::function<void(void)> set_window, GLFWwindow*& window) {
   initial_glfw();
   set_window();
   initial_glad();
@@ -192,7 +194,7 @@ void initial_opengl(std::function<void(void)> set_window, GLFWwindow*& window) {
 }
 
 // set vao
-void set_vao(GLuint& VAO, GLuint& VBO, GLuint& EBO,
+void SetVAO(GLuint& VAO, GLuint& VBO, GLuint& EBO,
              std::function<void(GLuint, GLuint, GLuint)> set_buffer,
              bool is_buffer_need_initial = true) {
   glGenVertexArrays(1, &VAO);
@@ -208,7 +210,7 @@ typedef PFNGLGETSHADERIVPROC CheckShaderHasErrorFunc;
 typedef PFNGLGETSHADERINFOLOGPROC GetShaderErrorMessageFunc;
 
 // check if shader works well
-void check_shader_have_error(GLuint id, GLenum type,
+void CheckShaderHaveError(GLuint id, GLenum type,
                              CheckShaderHasErrorFunc check_has_error,
                              GetShaderErrorMessageFunc get_error_info) {
   GLint no_error;
@@ -220,52 +222,52 @@ void check_shader_have_error(GLuint id, GLenum type,
 }
 
 // compile shader
-GLuint compile_shader(GLenum type, std::string path) {
+GLuint CompileShader(GLenum type, std::string path) {
   GLuint shader = glCreateShader(type);
   std::string str = read_string_from_path(path);
   const GLchar* source = str.c_str();
   glShaderSource(shader, 1, &source, NULL);
   glCompileShader(shader);
-  check_shader_have_error(shader, GL_COMPILE_STATUS, glGetShaderiv,
+  CheckShaderHaveError(shader, GL_COMPILE_STATUS, glGetShaderiv,
                           glGetShaderInfoLog);
   return shader;
 }
 
 // compile vertex shader
-GLuint compile_vertex_shader(std::string path) {
-  return compile_shader(GL_VERTEX_SHADER, path);
+GLuint CompileVertexShader(std::string path) {
+  return CompileShader(GL_VERTEX_SHADER, path);
 }
 
 // compile fragment shader
-GLuint compile_fragment_shader(std::string path) {
-  return compile_shader(GL_FRAGMENT_SHADER, path);
+GLuint CompileFragmentShader(std::string path) {
+  return CompileShader(GL_FRAGMENT_SHADER, path);
 }
 
 // create program and link shader
-GLuint create_program_with_shader(GLuint vertex_shader,
+GLuint CreatProgramWithShader(GLuint vertex_shader,
                                   GLuint fragment_shader) {
   GLuint program = glCreateProgram();
   glAttachShader(program, vertex_shader);
   glAttachShader(program, fragment_shader);
   glLinkProgram(program);
-  check_shader_have_error(program, GL_LINK_STATUS, glGetProgramiv,
+  CheckShaderHaveError(program, GL_LINK_STATUS, glGetProgramiv,
                           glGetProgramInfoLog);
   return program;
 }
 
 // create program and link shader with file path
-GLuint create_program_with_shader(std::string vertex_shader_path,
+GLuint CreatProgramWithShader(std::string vertex_shader_path,
                                   std::string fragment_shader_path) {
-  GLuint vertex_shader = compile_vertex_shader(vertex_shader_path);
-  GLuint fragment_shader = compile_fragment_shader(fragment_shader_path);
-  GLuint program = create_program_with_shader(vertex_shader, fragment_shader);
+  GLuint vertex_shader = CompileVertexShader(vertex_shader_path);
+  GLuint fragment_shader = CompileFragmentShader(fragment_shader_path);
+  GLuint program = CreatProgramWithShader(vertex_shader, fragment_shader);
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
   return program;
 }
 
 // create texture with file path
-void create_texture(GLuint& texture, std::string file_path) {
+void CreateTexture(GLuint& texture, std::string file_path) {
   // load and create a texture
   // -------------------------
   glGenTextures(1, &texture);
@@ -293,16 +295,137 @@ void create_texture(GLuint& texture, std::string file_path) {
   glGenerateMipmap(GL_TEXTURE_2D);
   stbi_image_free(data);
 }
+
 // set int
-void set_shader_int(GLuint id, const std::string& name, int value) {
+void SetShaderInt(GLuint id, const std::string& name, int value) {
   glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 }
 // set mat4
-void set_shader_mat4(GLuint id, const std::string& name, const glm::mat4& mat) {
+void SetShaderMat4(GLuint id, const std::string& name, const glm::mat4& mat) {
   // std::cout << glm::to_string(mat) << std::endl;
   glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE,
                      &mat[0][0]);
 }
+
+
+
+// Default camera values
+const float kDefaultCameraYaw         = -90.0f;
+const float kDefaultCameraPitch       =  0.0f;
+const float kDefaultCameraSpeed       =  2.0f;
+const float kDefaultCameraSensivity =  0.1f;
+const float kDefaultCameraZoom        =  45.0f;
+
+// An abstract camera class that processes input and calculates the
+// corresponding Euler Angles, Vectors and Matrices for use in OpenGL
+class Camera {
+ public:
+  // Defines several possible options for camera movement. Used as abstraction
+  // to stay away from window-system specific input methods
+  enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT };
+  // Camera Attributes
+  glm::vec3 Position;
+  glm::vec3 Front;
+  glm::vec3 Up;
+  glm::vec3 Right;
+  glm::vec3 WorldUp;
+  // Euler Angles
+  float Yaw;
+  float Pitch;
+  // Camera options
+  float MovementSpeed;
+  float MouseSensitivity;
+  float Zoom;
+
+  // Constructor with vectors
+  Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
+         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+         float yaw = kDefaultCameraYaw, float pitch = kDefaultCameraPitch)
+      : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+        MovementSpeed(kDefaultCameraSpeed),
+        MouseSensitivity(kDefaultCameraSensivity),
+        Zoom(kDefaultCameraZoom) {
+    Position = position;
+    WorldUp = up;
+    Yaw = yaw;
+    Pitch = pitch;
+    updateCameraVectors();
+  }
+  // Constructor with scalar values
+  Camera(float posX, float posY, float posZ, float upX, float upY, float upZ,
+         float yaw, float pitch)
+      : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
+        MovementSpeed(kDefaultCameraSpeed),
+        MouseSensitivity(kDefaultCameraSensivity),
+        Zoom(kDefaultCameraZoom) {
+    Position = glm::vec3(posX, posY, posZ);
+    WorldUp = glm::vec3(upX, upY, upZ);
+    Yaw = yaw;
+    Pitch = pitch;
+    updateCameraVectors();
+  }
+
+  // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+  glm::mat4 GetViewMatrix() {
+    return glm::lookAt(Position, Position + Front, Up);
+  }
+
+  // Processes input received from any keyboard-like input system. Accepts input
+  // parameter in the form of camera defined ENUM (to abstract it from windowing
+  // systems)
+  void ProcessKeyboard(Camera_Movement direction, float deltaTime) {
+    float velocity = MovementSpeed * deltaTime;
+    if (direction == FORWARD) Position += Front * velocity;
+    if (direction == BACKWARD) Position -= Front * velocity;
+    if (direction == LEFT) Position -= Right * velocity;
+    if (direction == RIGHT) Position += Right * velocity;
+  }
+
+  // Processes input received from a mouse input system. Expects the offset
+  // value in both the x and y direction.
+  void ProcessMouseMovement(float xoffset, float yoffset,
+                            GLboolean constrainPitch = true) {
+    xoffset *= MouseSensitivity;
+    yoffset *= MouseSensitivity;
+
+    Yaw += xoffset;
+    Pitch += yoffset;
+
+    // Make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (constrainPitch) {
+      if (Pitch > 89.0f) Pitch = 89.0f;
+      if (Pitch < -89.0f) Pitch = -89.0f;
+    }
+
+    // Update Front, Right and Up Vectors using the updated Euler angles
+    updateCameraVectors();
+  }
+
+  // Processes input received from a mouse scroll-wheel event. Only requires
+  // input on the vertical wheel-axis
+  void ProcessMouseScroll(float yoffset) {
+    if (Zoom >= 1.0f && Zoom <= 45.0f) Zoom -= yoffset;
+    if (Zoom <= 1.0f) Zoom = 1.0f;
+    if (Zoom >= 45.0f) Zoom = 45.0f;
+  }
+
+ private:
+  // Calculates the front vector from the Camera's (updated) Euler Angles
+  void updateCameraVectors() {
+    // Calculate the new Front vector
+    glm::vec3 front;
+    front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+    front.y = sin(glm::radians(Pitch));
+    front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+    Front = glm::normalize(front);
+    // Also re-calculate the Right and Up vector
+    Right = glm::normalize(glm::cross(
+        Front, WorldUp));  // Normalize the vectors, because their length gets
+                           // closer to 0 the more you look up or down which
+                           // results in slower movement.
+    Up = glm::normalize(glm::cross(Right, Front));
+  }
+};
 
 }  // namespace helper
 
