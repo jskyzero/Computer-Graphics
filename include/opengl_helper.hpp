@@ -349,7 +349,7 @@ class Camera {
     WorldUp = up;
     Yaw = yaw;
     Pitch = pitch;
-    updateCameraVectors();
+    UpdateCameraVectors();
   }
   // Constructor with scalar values
   Camera(float posX, float posY, float posZ, float upX, float upY, float upZ,
@@ -362,7 +362,7 @@ class Camera {
     WorldUp = glm::vec3(upX, upY, upZ);
     Yaw = yaw;
     Pitch = pitch;
-    updateCameraVectors();
+    UpdateCameraVectors();
   }
 
   // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
@@ -398,7 +398,7 @@ class Camera {
     }
 
     // Update Front, Right and Up Vectors using the updated Euler angles
-    updateCameraVectors();
+    UpdateCameraVectors();
   }
 
   // Processes input received from a mouse scroll-wheel event. Only requires
@@ -411,7 +411,7 @@ class Camera {
 
  private:
   // Calculates the front vector from the Camera's (updated) Euler Angles
-  void updateCameraVectors() {
+  void UpdateCameraVectors() {
     // Calculate the new Front vector
     glm::vec3 front;
     front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));

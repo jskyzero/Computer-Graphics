@@ -14,15 +14,15 @@ constexpr unsigned int kScreenHeight = 600;
 // camera
 auto camera = std::make_shared<helper::Camera>(glm::vec3(0.0f, 0.0f, 3.0f));
 // make mouse initial position center
-float lastX = kScreenWidth / 2.0f;
-float lastY = kScreenHeight / 2.0f;
-bool firstMouse = true;
+float last_x = kScreenWidth / 2.0f;
+float last_y = kScreenHeight / 2.0f;
+bool first_move_mouse = true;
 // timing
 // time between current frame and last frame
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
+float delta_time = 0.0f;
+float last_frame = 0.0f;
 // ImGui
-bool canMouseMoveCamera = false;
+bool can_mouse_move_camera = false;
 
 int main() {
   // the GLFW window
@@ -63,9 +63,10 @@ int main() {
     window = glfwCreateWindow(width, height, "homework6", NULL, NULL);
     helper::assert_true(window != NULL, "Failed to create GLFW windows");
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    glfwSetCursorPosCallback(window, MouseCallback);
+    glfwSetScrollCallback(window, ScrollCallback);
   };
   // if we need update vao's vbo / eao
   auto update_point_vao = []() {};
@@ -96,8 +97,8 @@ int main() {
 
   auto update_delta = []() {
     float currentFrame = (float)glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
+    delta_time = currentFrame - last_frame;
+    last_frame = currentFrame;
   };
 
   //
@@ -130,7 +131,7 @@ int main() {
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     update_delta();
-    processInput(window);
+    ProcessInput(window);
     glfwGetWindowSize(window, &width, &height);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     // also clear the depth buffer now!
@@ -191,21 +192,22 @@ int main() {
 // process all input: query GLFW whether relevant keys are pressed/released this
 // frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window) {
+void ProcessInput(GLFWwindow* window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    camera->ProcessKeyboard(helper::Camera::FORWARD, deltaTime);
+    camera->ProcessKeyboard(helper::Camera::FORWARD, delta_time);
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    camera->ProcessKeyboard(helper::Camera::BACKWARD, deltaTime);
+    camera->ProcessKeyboard(helper::Camera::BACKWARD, delta_time);
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    camera->ProcessKeyboard(helper::Camera::LEFT, deltaTime);
+    camera->ProcessKeyboard(helper::Camera::LEFT, delta_time);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    camera->ProcessKeyboard(helper::Camera::RIGHT, deltaTime);
+    camera->ProcessKeyboard(helper::Camera::RIGHT, delta_time);
   // if press left alt, then camera can move
-  canMouseMoveCamera = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS;
-  if (canMouseMoveCamera) {
+  can_mouse_move_camera = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS;
+  if (can_mouse_move_camera) {
+    first_move_mouse = true;
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   } else {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -215,7 +217,7 @@ void processInput(GLFWwindow* window) {
 // glfw: whenever the window size changed (by OS or user resize) this callback
 // function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
   // make sure the viewport matches the new window dimensions; note that width
   // and height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);
@@ -223,30 +225,30 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-  if (!canMouseMoveCamera) return;
+void MouseCallback(GLFWwindow* window, double xpos, double ypos) {
+  if (!can_mouse_move_camera) return;
 
-  if (firstMouse) {
-    lastX = (float)xpos;
-    lastY = (float)ypos;
-    firstMouse = false;
+  if (first_move_mouse) {
+    last_x = (float)xpos;
+    last_y = (float)ypos;
+    first_move_mouse = false;
   }
 
-  float xoffset = (float)xpos - lastX;
+  float xoffset = (float)xpos - last_x;
   float yoffset =
-      lastY -
+      last_y -
       (float)ypos;  // reversed since y-coordinates go from bottom to top
 
-  lastX = (float)xpos;
-  lastY = (float)ypos;
+  last_x = (float)xpos;
+  last_y = (float)ypos;
 
   camera->ProcessMouseMovement(-xoffset, -yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-  if (!canMouseMoveCamera) return;
+void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+  if (!can_mouse_move_camera) return;
   std::cout << yoffset << std::endl;
   camera->ProcessMouseScroll((float)yoffset);
 }
