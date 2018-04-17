@@ -11,6 +11,7 @@
 constexpr unsigned int kScreenWidth = 800;
 constexpr unsigned int kScreenHeight = 600;
 
+
 // camera
 auto camera = std::make_shared<helper::Camera>(glm::vec3(0.0f, 0.0f, 3.0f));
 // make mouse initial position center
@@ -23,12 +24,14 @@ float delta_time = 0.0f;
 float last_frame = 0.0f;
 // ImGui
 bool can_mouse_move_camera = false;
+glm::vec3 light_position(0.8f, 0.8f, 0.8f);
+
 
 int main() {
   // the GLFW window
   GLFWwindow* window;
   // save the vao vbo eao
-  GLuint point_vao[3];
+  GLuint box[3], light[3];
   // store window size
   int width = kScreenWidth, height = kScreenHeight;
 
@@ -69,9 +72,9 @@ int main() {
     glfwSetScrollCallback(window, ScrollCallback);
   };
   // if we need update vao's vbo / eao
-  auto update_point_vao = []() {};
+  auto update_box = []() {};
   // initial vao
-  auto set_point_vao = [update_point_vao, &vertices](GLuint VAO, GLuint VBO,
+  auto set_box = [update_box, &vertices](GLuint VAO, GLuint VBO,
                                                      GLuint EBO) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(),
                  vertices.data(), GL_STATIC_DRAW);
@@ -83,7 +86,20 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
                           (void*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
-    update_point_vao();
+    update_box();
+  };
+
+  auto set_light = [&vertices](GLuint VAO, GLuint VBO, GLuint EBO) {
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(),
+                 vertices.data(), GL_STATIC_DRAW);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
   };
 
   // imgui
@@ -113,6 +129,9 @@ int main() {
   GLuint coordinate_systems_shader_program = helper::CreatProgramWithShader(
       "../resources/shaders/coordinate_systems.vs.glsl",
       "../resources/shaders/coordinate_systems.fs.glsl");
+  GLuint light_shader_program =
+      helper::CreatProgramWithShader("../resources/shaders/light.vs.glsl",
+                                     "../resources/shaders/light.fs.glsl");
   GLuint simple_shader_program =
       helper::CreatProgramWithShader("../resources/shaders/simple.vs.glsl",
                                      "../resources/shaders/simple.fs.glsl");
@@ -120,13 +139,10 @@ int main() {
   GLuint eye_texture, box_texture;
   helper::CreateTexture(eye_texture, "../resources/textures/eye.jpg");
   helper::CreateTexture(box_texture, "../resources/textures/box_texture.jpeg");
-  // set shader
-  glUseProgram(coordinate_systems_shader_program);
-  // set texture
-  helper::SetShaderInt(coordinate_systems_shader_program, "texture1", 0);
-  helper::SetShaderInt(coordinate_systems_shader_program, "texture2", 1);
   // set vao
-  helper::SetVAO(point_vao[0], point_vao[1], point_vao[2], set_point_vao);
+  helper::SetVAO(box[0], box[1], box[2], set_box);
+  // set vao
+  helper::SetVAO(light[0], light[1], light[2], set_light);
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -145,20 +161,17 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, box_texture);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, eye_texture);
-    glUseProgram(coordinate_systems_shader_program);
 
     // create transformations
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
 
-    // if set view
-    model = glm::mat4(1.0f);
-    float radius = 10.0f;
-    float camX = (float)sin(glfwGetTime()) * radius;
-    float camZ = (float)cos(glfwGetTime()) * radius;
-    view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0),
-                       glm::vec3(0.0, 1.0, 0.0));
+    // set shader
+    glUseProgram(coordinate_systems_shader_program);
+    // set texture
+    helper::SetShaderInt(coordinate_systems_shader_program, "texture1", 0);
+    helper::SetShaderInt(coordinate_systems_shader_program, "texture2", 1);
 
     model = glm::mat4(1.0f);
     model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -170,16 +183,37 @@ int main() {
                                   0.1f, 100.0f);
     // camera/view transformation
     view = camera->GetViewMatrix();
-
     // pass transformation matrices to the shader
     helper::SetShaderMat4(coordinate_systems_shader_program, "projection",
                           projection);
     helper::SetShaderMat4(coordinate_systems_shader_program, "view", view);
     helper::SetShaderMat4(coordinate_systems_shader_program, "model", model);
+    helper::SetShaderVec3(coordinate_systems_shader_program, "objectColor", 1.0f, 0.5f, 0.31f);
+    helper::SetShaderVec3(coordinate_systems_shader_program, "lightColor",  1.0f, 1.0f, 1.0f);
+    // render boxes
+    glBindVertexArray(box[0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    glUseProgram(light_shader_program);
+    view = glm::mat4(1.0f);
+    projection = glm::mat4(1.0f);
+    model = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(camera->Zoom),
+                                  (float)kScreenWidth / (float)kScreenHeight,
+                                  0.1f, 100.0f);
+    // camera/view transformation
+    view = camera->GetViewMatrix();
+    model = glm::translate(model, light_position);
+    model = glm::scale(model, glm::vec3(0.2f));
+    helper::SetShaderMat4(light_shader_program, "projection",
+                          projection);
+    helper::SetShaderMat4(light_shader_program, "view", view);
+    helper::SetShaderMat4(light_shader_program, "model", model);
 
     // render boxes
-    glBindVertexArray(point_vao[0]);
+    glBindVertexArray(light[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
