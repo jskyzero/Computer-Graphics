@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+
 constexpr unsigned int kScreenWidth = 800;
 constexpr unsigned int kScreenHeight = 600;
 
@@ -31,7 +32,7 @@ int main() {
   // the GLFW window
   GLFWwindow* window;
   // save the vao vbo eao
-  GLuint box[3], light[3];
+  GLuint box[3], light;
   // store window size
   int width = kScreenWidth, height = kScreenHeight;
 
@@ -73,8 +74,6 @@ int main() {
       }
       auto normal =
           glm::normalize(glm::cross(sides[2] - sides[1], sides[0] - sides[1]));
-      std::cout << normal[0] << " " << normal[1] << " " << normal[2]
-                << std::endl;
       std::vector<GLfloat> normal_v{normal[0], normal[1], normal[2]};
       for (int j = 0; j < 3; j++) {
         v.insert(v.begin() + (index + (n + 3) * (j + 1) - 3), normal_v.begin(),
@@ -153,9 +152,9 @@ int main() {
   glEnable(GL_DEPTH_TEST);
 
   // create shader program
-  GLuint coordinate_systems_shader_program = helper::CreatProgramWithShader(
-      "../resources/shaders/coordinate_systems.vs.glsl",
-      "../resources/shaders/coordinate_systems.fs.glsl");
+  GLuint phong_shader_program = helper::CreatProgramWithShader(
+      "../resources/shaders/phong.vs.glsl",
+      "../resources/shaders/phong.fs.glsl");
   GLuint light_shader_program =
       helper::CreatProgramWithShader("../resources/shaders/light.vs.glsl",
                                      "../resources/shaders/light.fs.glsl");
@@ -170,7 +169,7 @@ int main() {
   add_normal_verctor(v, 5);
   // set vao
   helper::SetVAO(box[0], box[1], box[2], set_box);
-  helper::SetVAO(light[0], light[1], light[2], set_light, false);
+  helper::SetVAO(light, box[1], box[2], set_light, false);
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -196,10 +195,10 @@ int main() {
     glm::mat4 model = glm::mat4(1.0f);
 
     // set shader
-    glUseProgram(coordinate_systems_shader_program);
+    glUseProgram(phong_shader_program);
     // set texture
-    helper::SetShaderInt(coordinate_systems_shader_program, "texture1", 0);
-    helper::SetShaderInt(coordinate_systems_shader_program, "texture2", 1);
+    helper::SetShaderInt(phong_shader_program, "texture1", 0);
+    helper::SetShaderInt(phong_shader_program, "texture2", 1);
 
     model = glm::mat4(1.0f);
     model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -212,12 +211,14 @@ int main() {
     // camera/view transformation
     view = camera->GetViewMatrix();
     // pass transformation matrices to the shader
-    helper::SetShaderMat4(coordinate_systems_shader_program, "projection",
+    helper::SetShaderMat4(phong_shader_program, "projection",
                           projection);
-    helper::SetShaderMat4(coordinate_systems_shader_program, "view", view);
-    helper::SetShaderMat4(coordinate_systems_shader_program, "model", model);
-    helper::SetShaderVec3(coordinate_systems_shader_program, "objectColor", 1.0f, 0.5f, 0.31f);
-    helper::SetShaderVec3(coordinate_systems_shader_program, "lightColor",  1.0f, 1.0f, 1.0f);
+    helper::SetShaderMat4(phong_shader_program, "view", view);
+    helper::SetShaderMat4(phong_shader_program, "model", model);
+    helper::SetShaderVec3(phong_shader_program, "objectColor", 1.0f, 0.5f, 0.31f);
+    helper::SetShaderVec3(phong_shader_program, "lightColor",  1.0f, 1.0f, 1.0f);
+    helper::SetShaderVec3(phong_shader_program, "lightPos",  light_position);
+    
     // render boxes
     glBindVertexArray(box[0]);
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -239,7 +240,7 @@ int main() {
     helper::SetShaderMat4(light_shader_program, "model", model);
 
     // render boxes
-    glBindVertexArray(light[0]);
+    glBindVertexArray(light);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
