@@ -24,6 +24,7 @@ env:
   - TEST_DIR="3 - Draw line"
   - TEST_DIR="4 - Transformation"
   - TEST_DIR="5 - Camera"
+  - TEST_DIR="6 - Lights and Shading"
 
 
 # so ugly, but it works

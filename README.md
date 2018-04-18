@@ -19,9 +19,12 @@
 ├── 3 - Draw line
 ├── 4 - Transformation
 ├── 5 - Camera
+├── 6 - Lights and Shading
 ├── build
 ├── docs
 ├── projects
+│   ├── OpenGL-Hardway
+│   └── OpenGL-Playground
 └── README.md
 ```
 
