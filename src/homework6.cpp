@@ -134,6 +134,9 @@ int main() {
     ImGui::Text("Welcome");
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::SliderFloat("light x", &light_position[0], -1, 1);
+    ImGui::SliderFloat("light y", &light_position[1], -1, 1);
+    ImGui::SliderFloat("light z", &light_position[2], -1, 1);
     ImGui::End();
   };
 
@@ -218,6 +221,8 @@ int main() {
     helper::SetShaderVec3(phong_shader_program, "objectColor", 1.0f, 0.5f, 0.31f);
     helper::SetShaderVec3(phong_shader_program, "lightColor",  1.0f, 1.0f, 1.0f);
     helper::SetShaderVec3(phong_shader_program, "lightPos",  light_position);
+    helper::SetShaderVec3(phong_shader_program, "viewPos",  camera->Position);
+    
     
     // render boxes
     glBindVertexArray(box[0]);
