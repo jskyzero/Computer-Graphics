@@ -300,6 +300,10 @@ void CreateTexture(GLuint& texture, std::string file_path) {
 void SetShaderInt(GLuint id, const std::string& name, int value) {
   glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 }
+// set float
+void SetShaderFloat(GLuint id, const std::string& name, float value) {
+  glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+}
 // set vec3
 void SetShaderVec3(GLuint id, const std::string& name, const glm::vec3& value){
   glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);

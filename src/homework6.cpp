@@ -25,7 +25,9 @@ float delta_time = 0.0f;
 float last_frame = 0.0f;
 // ImGui
 bool can_mouse_move_camera = false;
-glm::vec3 light_position(0.8f, 0.8f, 0.8f);
+bool use_gouraud_model = false;
+float light_strength[4] {0.1f, 1.0f, 0.5f, 1.0f};
+glm::vec3 light_position(0.4f, -0.5f, 0.8f);
 
 
 int main() {
@@ -66,7 +68,7 @@ int main() {
 
   auto add_normal_verctor = [](std::vector<GLfloat>& v, int n) {
     glm::vec3 sides[3] = {glm::vec3()};
-    for (int i = 0; 3 * (n + 3) * i < v.size(); i++) {
+    for (int i = 0; 3 * (n + 3) * i < (int)v.size(); i++) {
       auto index = (i * (3 * (n + 3)));
       auto p = v.data() + index;
       for (int j = 0; j < 3; j++) {
@@ -134,9 +136,14 @@ int main() {
     ImGui::Text("Welcome");
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::Checkbox("use_gouraud_model", &use_gouraud_model);
     ImGui::SliderFloat("light x", &light_position[0], -1, 1);
     ImGui::SliderFloat("light y", &light_position[1], -1, 1);
     ImGui::SliderFloat("light z", &light_position[2], -1, 1);
+    ImGui::SliderFloat("ambientStrength", light_strength, 0, 1);
+    ImGui::SliderFloat("diffuseStrength", light_strength + 1, 0, 1);
+    ImGui::SliderFloat("specularStrength", light_strength + 2, 0, 1);
+    ImGui::SliderFloat("lightStrength", light_strength + 3, 0, 1);
     ImGui::End();
   };
 
@@ -161,9 +168,9 @@ int main() {
   GLuint light_shader_program =
       helper::CreatProgramWithShader("../resources/shaders/light.vs.glsl",
                                      "../resources/shaders/light.fs.glsl");
-  GLuint simple_shader_program =
-      helper::CreatProgramWithShader("../resources/shaders/simple.vs.glsl",
-                                     "../resources/shaders/simple.fs.glsl");
+  GLuint gouraud_shader_program =
+      helper::CreatProgramWithShader("../resources/shaders/gouraud.vs.glsl",
+                                     "../resources/shaders/gouraud.fs.glsl");
   // create texture
   GLuint eye_texture, box_texture;
   helper::CreateTexture(eye_texture, "../resources/textures/eye.jpg");
@@ -197,11 +204,15 @@ int main() {
     glm::mat4 projection = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
 
+    GLuint shader_program = use_gouraud_model ?
+                            gouraud_shader_program : 
+                            phong_shader_program;
+
     // set shader
-    glUseProgram(phong_shader_program);
+    glUseProgram(shader_program);
     // set texture
-    helper::SetShaderInt(phong_shader_program, "texture1", 0);
-    helper::SetShaderInt(phong_shader_program, "texture2", 1);
+    helper::SetShaderInt(shader_program, "texture1", 0);
+    helper::SetShaderInt(shader_program, "texture2", 1);
 
     model = glm::mat4(1.0f);
     model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -214,15 +225,18 @@ int main() {
     // camera/view transformation
     view = camera->GetViewMatrix();
     // pass transformation matrices to the shader
-    helper::SetShaderMat4(phong_shader_program, "projection",
+    helper::SetShaderMat4(shader_program, "projection",
                           projection);
-    helper::SetShaderMat4(phong_shader_program, "view", view);
-    helper::SetShaderMat4(phong_shader_program, "model", model);
-    helper::SetShaderVec3(phong_shader_program, "objectColor", 1.0f, 0.5f, 0.31f);
-    helper::SetShaderVec3(phong_shader_program, "lightColor",  1.0f, 1.0f, 1.0f);
-    helper::SetShaderVec3(phong_shader_program, "lightPos",  light_position);
-    helper::SetShaderVec3(phong_shader_program, "viewPos",  camera->Position);
-    
+    helper::SetShaderMat4(shader_program, "view", view);
+    helper::SetShaderMat4(shader_program, "model", model);
+    helper::SetShaderVec3(shader_program, "objectColor", 1.0f, 0.5f, 0.31f);
+    helper::SetShaderVec3(shader_program, "lightColor",  1.0f, 1.0f, 1.0f);
+    helper::SetShaderVec3(shader_program, "lightPos",  light_position);
+    helper::SetShaderVec3(shader_program, "viewPos",  camera->Position);
+    helper::SetShaderFloat(shader_program, "ambientStrength",  light_strength[0]);
+    helper::SetShaderFloat(shader_program, "diffuseStrength",  light_strength[1]);
+    helper::SetShaderFloat(shader_program, "specularStrength", light_strength[2]);
+    helper::SetShaderFloat(shader_program, "lightStrength",  light_strength[3]);
     
     // render boxes
     glBindVertexArray(box[0]);
