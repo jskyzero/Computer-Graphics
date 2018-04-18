@@ -35,11 +35,13 @@ int main() {
   // store window size
   int width = kScreenWidth, height = kScreenHeight;
 
-  // basic vertices
-  std::vector<GLfloat> vertices{
+  // basic v
+  std::vector<GLfloat> v{
       -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
-      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
-      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+
+      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f,
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
       -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
       0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
@@ -61,6 +63,25 @@ int main() {
       0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
       -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f};
 
+  auto add_normal_verctor = [](std::vector<GLfloat>& v, int n) {
+    glm::vec3 sides[3] = {glm::vec3()};
+    for (int i = 0; 3 * (n + 3) * i < v.size(); i++) {
+      auto index = (i * (3 * (n + 3)));
+      auto p = v.data() + index;
+      for (int j = 0; j < 3; j++) {
+        sides[j] = glm::vec3(p[n * j + 0], p[n * j + 1], p[n * j + 2]);
+      }
+      auto normal =
+          glm::normalize(glm::cross(sides[2] - sides[1], sides[0] - sides[1]));
+      std::cout << normal[0] << " " << normal[1] << " " << normal[2]
+                << std::endl;
+      std::vector<GLfloat> normal_v{normal[0], normal[1], normal[2]};
+      for (int j = 0; j < 3; j++) {
+        v.insert(v.begin() + (index + (n + 3) * (j + 1) - 3), normal_v.begin(),
+                 normal_v.end());
+      }
+    }
+  };
   // dirty work initial
   auto initial_window = [&window, width, height] {
     window = glfwCreateWindow(width, height, "homework6", NULL, NULL);
@@ -74,32 +95,38 @@ int main() {
   // if we need update vao's vbo / eao
   auto update_box = []() {};
   // initial vao
-  auto set_box = [update_box, &vertices](GLuint VAO, GLuint VBO,
+  auto set_box = [update_box, &v](GLuint VAO, GLuint VBO,
                                                      GLuint EBO) {
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(),
-                 vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * v.size(),
+                 v.data(), GL_STATIC_DRAW);
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
                           (void*)0);
     glEnableVertexAttribArray(0);
     // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
                           (void*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
+                          (void*)(5 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
     update_box();
   };
 
-  auto set_light = [&vertices](GLuint VAO, GLuint VBO, GLuint EBO) {
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(),
-                 vertices.data(), GL_STATIC_DRAW);
+  auto set_light = [&v](GLuint VAO, GLuint VBO, GLuint EBO) {
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * v.size(),
+                 v.data(), GL_STATIC_DRAW);
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
                           (void*)0);
     glEnableVertexAttribArray(0);
     // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
                           (void*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
+                          (void*)(5 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
   };
 
   // imgui
@@ -139,10 +166,11 @@ int main() {
   GLuint eye_texture, box_texture;
   helper::CreateTexture(eye_texture, "../resources/textures/eye.jpg");
   helper::CreateTexture(box_texture, "../resources/textures/box_texture.jpeg");
+
+  add_normal_verctor(v, 5);
   // set vao
   helper::SetVAO(box[0], box[1], box[2], set_box);
-  // set vao
-  helper::SetVAO(light[0], light[1], light[2], set_light);
+  helper::SetVAO(light[0], light[1], light[2], set_light, false);
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
