@@ -54,6 +54,15 @@
     "typeinfo": "cpp",
     "utility": "cpp",
     "valarray": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "hash_map": "cpp",
+    "hash_set": "cpp",
+    "optional": "cpp",
+    "string_view": "cpp",
+    "shared_mutex": "cpp",
+    "cuchar": "cpp",
+    "iterator": "cpp",
+    "memory_resource": "cpp",
+    "unordered_map": "cpp"
   }
 }

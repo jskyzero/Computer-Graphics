@@ -35,8 +35,11 @@ void init(void) {
     {  0.90f,  0.90f },
     { -0.85f,  0.90f },
   };
+  std::cout << "isOK" << std::endl;
   // 创建buffer
   glCreateBuffers(NumBuffers, Buffers);
+  std::cout << "isOK" << std::endl;
+  
   // 转移数据
   glNamedBufferStorage(Buffers[ArrayBuffers], sizeof(vertices), vertices, 0);
   // 加载shader
@@ -53,7 +56,51 @@ void init(void) {
   glEnableVertexAttribArray(vPosition);
 }
 
+void display(void) {
+  // clear color
+  static const float black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+  glClearBufferfv(GL_COLOR, 0, black);
+  // draw triangle
+  glBindVertexArray(VAOs[Triangles]);
+  glDrawArrays(GL_TRIANGLES, 0, kNumVertices);
+}
+
+static void glfwError(int id, const char* description)
+{
+  std::cout << description << std::endl;
+}
+
+
+
 int main() {
-  std::cout << "hello,world!" << std::endl;
+  glfwSetErrorCallback(&glfwError);
+  helper::assert_true(glfwInit() == GLFW_TRUE, "glfw initial error");
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+  
+  // create window
+  GLFWwindow * window = glfwCreateWindow(640, 480, "Triangles", NULL, NULL);
+  helper::assert_true(window != NULL, "Failed to create GLFW windows");
+  // set context
+  glfwMakeContextCurrent(window);
+  // glad initial
+  helper::initial_glad();
+
+  // initial
+  init();
+  
+  // main loop
+  while (!glfwWindowShouldClose(window)) {
+    display();
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
+
+  // exit
+  glfwDestroyWindow(window);
+  glfwTerminate();
   return 0;
 }
