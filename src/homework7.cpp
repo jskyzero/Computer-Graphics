@@ -1,17 +1,18 @@
-#include <iostream>  // basic input output
-#include <memory>    // for make_shared
+#include <iostream>           // basic input output
+#include <memory>             // for make_shared
 
 #include <homework7.hpp>      // header file
 #include <opengl_helper.hpp>  // helper library
+
 // glm library
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 
+// screen size
 constexpr unsigned int kScreenWidth = 800;
 constexpr unsigned int kScreenHeight = 600;
-
 // camera
 auto camera = std::make_shared<helper::Camera>(glm::vec3(0.0f, 0.0f, 3.0f));
 // make mouse initial position center
@@ -33,7 +34,6 @@ GLuint plane_vao[3];
 int main() {
   // the GLFW window
   GLFWwindow* window;
-  
   // store window size
   int width = kScreenWidth, height = kScreenHeight;
   
@@ -60,6 +60,7 @@ int main() {
     ImGui::End();
   };
 
+  // update time delta
   auto update_delta = []() {
     float currentFrame = (float)glfwGetTime();
     delta_time = currentFrame - last_frame;
@@ -70,6 +71,7 @@ int main() {
   // main part
   //
 
+  // initial opengl
   helper::InitialOpenGL(initial_window, window);
   // enable depth
   glEnable(GL_DEPTH_TEST);
@@ -92,6 +94,7 @@ int main() {
   helper::CreateTexture(eye_texture, "../resources/textures/eye.jpg");
   helper::CreateTexture(box_texture, "../resources/textures/box_texture.jpeg");
 
+  // vertices
   std::vector<GLfloat> plane_vertices{
       // Positions          // Normals         // Texture Coords
       25.0f,  -0.5f, 25.0f,  0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
@@ -101,7 +104,7 @@ int main() {
       25.0f,  -0.5f, 25.0f,  0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
       25.0f,  -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 25.0f,
       -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f,  25.0f };
-  
+  // vaos
   auto set_plane =[&plane_vertices](GLuint VAO, GLuint VBO, GLuint EBO) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * plane_vertices.size(),
                  plane_vertices.data(), GL_STATIC_DRAW);
