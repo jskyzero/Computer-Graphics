@@ -78,6 +78,9 @@ int main() {
   GLuint debug_shader_program = helper::CreatProgramWithShader(
       "../resources/shaders/debug_quad.vs.glsl",
       "../resources/shaders/debug_quad_depth.fs.glsl");
+  GLuint shadow_shader_program = helper::CreatProgramWithShader(
+    "../resources/shaders/shadow.vs.glsl",
+    "../resources/shaders/shadow.fs.glsl");
   GLuint depth_shader_program = 
       helper::CreatProgramWithShader("../resources/shaders/depth.vs.glsl",
                                      "../resources/shaders/depth.fs.glsl");
@@ -133,51 +136,81 @@ int main() {
   glReadBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  // shader configuration
+  glUseProgram(shadow_shader_program);
+  helper::SetShaderInt(shadow_shader_program, "diffuseTexture", 0);
+  helper::SetShaderInt(shadow_shader_program, "shadowMap", 1);
+  glUseProgram(debug_shader_program);
+  helper::SetShaderInt(shadow_shader_program, "depthMap", 0);
 
+
+  // main part
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     update_delta();
     ProcessInput(window);
     glfwGetWindowSize(window, &width, &height);
-    // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     // also clear the depth buffer now!
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ImGui_ImplGlfwGL3_NewFrame();
     create_imgui();
 
-    glUseProgram(simple_shader_program);
-    RenderScene(simple_shader_program);
-    // // 1. Render depth of scene to texture (from light's perspective)
-    // // - Get light projection/view matrix.
-    // glm::mat4 lightProjection, lightView;
-    // glm::mat4 lightSpaceMatrix;
-    // GLfloat near_plane = 1.0f, far_plane = 7.5f;
-    // lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-    // lightView = glm::lookAt(light_position, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    // lightSpaceMatrix = lightProjection * lightView;
-    // // - render scene from light's point of view
-    // glUseProgram(depth_shader_program);
-    // glUniformMatrix4fv(glGetUniformLocation(depth_shader_program, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+    //glUseProgram(simple_shader_program);
+    //RenderScene(simple_shader_program);
+     // 1. Render depth of scene to texture (from light's perspective)
+     // - Get light projection/view matrix.
+     glm::mat4 lightProjection, lightView;
+     glm::mat4 lightSpaceMatrix;
+     GLfloat near_plane = 1.0f, far_plane = 7.5f;
+     lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+     lightView = glm::lookAt(light_position, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+     lightSpaceMatrix = lightProjection * lightView;
+     // - render scene from light's point of view
+     glUseProgram(depth_shader_program);
+     glUniformMatrix4fv(glGetUniformLocation(depth_shader_program, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 
-    // glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-    // glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    //   glClear(GL_DEPTH_BUFFER_BIT);
-    //   RenderScene(depth_shader_program);
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+       glClear(GL_DEPTH_BUFFER_BIT);
+       RenderScene(depth_shader_program);
+     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // // Reset viewport
-    // glViewport(0, 0, width, height);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+     // Reset viewport
+     glViewport(0, 0, width, height);
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    // // Render Depth map to quad
-    // glUseProgram(debug_shader_program);
-    // glUniform1f(glGetUniformLocation(debug_shader_program, "near_plane"), near_plane);
-    // glUniform1f(glGetUniformLocation(debug_shader_program, "far_plane"), far_plane);
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, depthMap);
-    // RenderQuad();
+     // 2. render scene as normal using the generated depth/shadow map  
+     // --------------------------------------------------------------
+     glViewport(0, 0, kScreenWidth, kScreenHeight);
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+     glUseProgram(shadow_shader_program);
+     glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)width / (float)height, 0.1f, 100.0f);
+     glm::mat4 view = camera->GetViewMatrix();
+     helper::SetShaderMat4(shadow_shader_program, "projection", projection);
+     helper::SetShaderMat4(shadow_shader_program, "view", view);
+
+     // set light uniforms
+     helper::SetShaderVec3(shadow_shader_program, "viewPos", camera->Position);
+     helper::SetShaderVec3(shadow_shader_program, "lightPos", light_position);
+     helper::SetShaderMat4(shadow_shader_program, "lightSpaceMatrix", lightSpaceMatrix);
+
+     glActiveTexture(GL_TEXTURE0);
+     glBindTexture(GL_TEXTURE_2D, box_texture);
+     glActiveTexture(GL_TEXTURE1);
+     glBindTexture(GL_TEXTURE_2D, depthMap);
+     RenderScene(shadow_shader_program);
+
+     // render Depth map to quad for visual debugging
+     // ---------------------------------------------
+     //glUseProgram(debug_shader_program);
+     //helper::SetShaderFloat(debug_shader_program, "near_plane", near_plane);
+     //helper::SetShaderFloat(debug_shader_program, "far_plane", far_plane);
+
+     //glActiveTexture(GL_TEXTURE0);
+     //glBindTexture(GL_TEXTURE_2D, depthMap);
+     //renderQuad();
 
 
     ImGui::Render();
