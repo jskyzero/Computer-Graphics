@@ -100,38 +100,6 @@
             },
             "cStandard": "c11",
             "cppStandard": "c++17"
-        },
-        {
-            "name": "Surface-MSVC",
-            "includePath": [
-                "C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.13.26128/include",
-                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/ucrt/",
-                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/um/",
-                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/winrt/",
-                "C:/Program Files (x86)/Windows Kits/10/Include/10.0.16299.0/shared/",
-                "${workspaceRoot}/include",
-                "${workspaceRoot}",
-                "../OpenGL/glfw/include",
-                "../OpenGL/glad/include",
-                "../OpenGL/imgui",
-                "../OpenGL/assimp/include",
-                "../OpenGL/glm"
-            ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "intelliSenseMode": "msvc-x64",
-            "browse": {
-                "path": [
-                    "${workspaceRoot}"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
-            },
-            "cStandard": "c11",
-            "cppStandard": "c++17"
         }
     ],
     "version": 4

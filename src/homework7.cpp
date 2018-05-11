@@ -1,7 +1,7 @@
 #include <iostream>  // basic input output
 #include <memory>    // for make_shared
 
-#include <playground.hpp>      // header file
+#include <homework7.hpp>      // header file
 #include <opengl_helper.hpp>  // helper library
 // glm library
 #include <glm/glm.hpp>
@@ -85,7 +85,7 @@ int main() {
   };
   // dirty work initial
   auto initial_window = [&window, width, height] {
-    window = glfwCreateWindow(width, height, "playground", NULL, NULL);
+    window = glfwCreateWindow(width, height, "homework7", NULL, NULL);
     helper::assert_true(window != NULL, "Failed to create GLFW windows");
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -176,8 +176,6 @@ int main() {
   helper::CreateTexture(eye_texture, "../resources/textures/eye.jpg");
   helper::CreateTexture(box_texture, "../resources/textures/box_texture.jpeg");
 
-  helper::Model obj = helper::Model("../resources/objects/nanosuit/nanosuit.obj");
-
   add_normal_verctor(v, 5);
   // set vao
   helper::SetVAO(box[0], box[1], box[2], set_box);
@@ -217,9 +215,8 @@ int main() {
     helper::SetShaderInt(shader_program, "texture2", 1);
 
     model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	
-    // model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-    // model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     // pass projection matrix to shader (note that in this case it could change
     // every frame)
     projection = glm::perspective(glm::radians(camera->Zoom),
@@ -242,10 +239,8 @@ int main() {
     helper::SetShaderFloat(shader_program, "lightStrength",  light_strength[3]);
     
     // render boxes
-    // glBindVertexArray(box[0]);
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    obj.Draw(shader_program);
+    glBindVertexArray(box[0]);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     glUseProgram(light_shader_program);
     view = glm::mat4(1.0f);
