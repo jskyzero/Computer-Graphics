@@ -12,77 +12,31 @@
 constexpr unsigned int kScreenWidth = 800;
 constexpr unsigned int kScreenHeight = 600;
 
-
 // camera
 auto camera = std::make_shared<helper::Camera>(glm::vec3(0.0f, 0.0f, 3.0f));
 // make mouse initial position center
 float last_x = kScreenWidth / 2.0f;
 float last_y = kScreenHeight / 2.0f;
 bool first_move_mouse = true;
+bool can_mouse_move_camera = false;
 // timing
 // time between current frame and last frame
 float delta_time = 0.0f;
 float last_frame = 0.0f;
 // ImGui
-bool can_mouse_move_camera = false;
-bool use_gouraud_model = false;
-float light_strength[4] {0.1f, 1.0f, 0.5f, 1.0f};
 glm::vec3 light_position(0.4f, -0.5f, 0.8f);
+
+// global values
+GLuint plane_vao[3];
 
 
 int main() {
   // the GLFW window
   GLFWwindow* window;
-  // save the vao vbo eao
-  GLuint box[3], light;
+  
   // store window size
   int width = kScreenWidth, height = kScreenHeight;
-
-  // basic v
-  std::vector<GLfloat> v{
-      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
-      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
-
-      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f,
-      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-
-      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
-      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-      -0.5f, 0.5f,  0.5f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f, 0.0f,
-
-      -0.5f, 0.5f,  0.5f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 1.0f, 1.0f,
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  1.0f, 0.0f,
-
-      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
-      0.5f,  -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f, 1.0f,
-      0.5f,  -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 1.0f,
-      0.5f,  -0.5f, 0.5f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
-      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
-      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-      -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f};
-
-  auto add_normal_verctor = [](std::vector<GLfloat>& v, int n) {
-    glm::vec3 sides[3] = {glm::vec3()};
-    for (int i = 0; 3 * (n + 3) * i < (int)v.size(); i++) {
-      auto index = (i * (3 * (n + 3)));
-      auto p = v.data() + index;
-      for (int j = 0; j < 3; j++) {
-        sides[j] = glm::vec3(p[n * j + 0], p[n * j + 1], p[n * j + 2]);
-      }
-      auto normal =
-          glm::normalize(glm::cross(sides[2] - sides[1], sides[0] - sides[1]));
-      std::vector<GLfloat> normal_v{normal[0], normal[1], normal[2]};
-      for (int j = 0; j < 3; j++) {
-        v.insert(v.begin() + (index + (n + 3) * (j + 1) - 3), normal_v.begin(),
-                 normal_v.end());
-      }
-    }
-  };
+  
   // dirty work initial
   auto initial_window = [&window, width, height] {
     window = glfwCreateWindow(width, height, "homework7", NULL, NULL);
@@ -93,42 +47,6 @@ int main() {
     glfwSetCursorPosCallback(window, MouseCallback);
     glfwSetScrollCallback(window, ScrollCallback);
   };
-  // if we need update vao's vbo / eao
-  auto update_box = []() {};
-  // initial vao
-  auto set_box = [update_box, &v](GLuint VAO, GLuint VBO,
-                                                     GLuint EBO) {
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * v.size(),
-                 v.data(), GL_STATIC_DRAW);
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          (void*)0);
-    glEnableVertexAttribArray(0);
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          (void*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          (void*)(5 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(2);
-    update_box();
-  };
-
-  auto set_light = [&v](GLuint VAO, GLuint VBO, GLuint EBO) {
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * v.size(),
-                 v.data(), GL_STATIC_DRAW);
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          (void*)0);
-    glEnableVertexAttribArray(0);
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          (void*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
-                          (void*)(5 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(2);
-  };
 
   // imgui
   auto create_imgui = []() {
@@ -136,14 +54,9 @@ int main() {
     ImGui::Text("Welcome");
     ImGui::Text("Average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::Checkbox("use_gouraud_model", &use_gouraud_model);
     ImGui::SliderFloat("light x", &light_position[0], -1, 1);
     ImGui::SliderFloat("light y", &light_position[1], -1, 1);
     ImGui::SliderFloat("light z", &light_position[2], -1, 1);
-    ImGui::SliderFloat("ambientStrength", light_strength, 0, 1);
-    ImGui::SliderFloat("diffuseStrength", light_strength + 1, 0, 1);
-    ImGui::SliderFloat("specularStrength", light_strength + 2, 0, 1);
-    ImGui::SliderFloat("lightStrength", light_strength + 3, 0, 1);
     ImGui::End();
   };
 
@@ -162,105 +75,109 @@ int main() {
   glEnable(GL_DEPTH_TEST);
 
   // create shader program
-  GLuint phong_shader_program = helper::CreatProgramWithShader(
-      "../resources/shaders/phong.vs.glsl",
-      "../resources/shaders/phong.fs.glsl");
-  GLuint light_shader_program =
-      helper::CreatProgramWithShader("../resources/shaders/light.vs.glsl",
-                                     "../resources/shaders/light.fs.glsl");
-  GLuint gouraud_shader_program =
-      helper::CreatProgramWithShader("../resources/shaders/gouraud.vs.glsl",
-                                     "../resources/shaders/gouraud.fs.glsl");
+  GLuint debug_shader_program = helper::CreatProgramWithShader(
+      "../resources/shaders/debug_quad.vs.glsl",
+      "../resources/shaders/debug_quad_depth.fs.glsl");
+  GLuint depth_shader_program = 
+      helper::CreatProgramWithShader("../resources/shaders/depth.vs.glsl",
+                                     "../resources/shaders/depth.fs.glsl");
+  GLuint simple_shader_program = 
+      helper::CreatProgramWithShader("../resources/shaders/model.vs.glsl",
+                                     "../resources/shaders/model.fs.glsl");
   // create texture
   GLuint eye_texture, box_texture;
   helper::CreateTexture(eye_texture, "../resources/textures/eye.jpg");
   helper::CreateTexture(box_texture, "../resources/textures/box_texture.jpeg");
 
-  add_normal_verctor(v, 5);
-  // set vao
-  helper::SetVAO(box[0], box[1], box[2], set_box);
-  helper::SetVAO(light, box[1], box[2], set_light, false);
+  std::vector<GLfloat> plane_vertices{
+      // Positions          // Normals         // Texture Coords
+      25.0f,  -0.5f, 25.0f,  0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
+      -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f,  25.0f,
+      -25.0f, -0.5f, 25.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f,
+
+      25.0f,  -0.5f, 25.0f,  0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
+      25.0f,  -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 25.0f,
+      -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f,  25.0f };
+  
+  auto set_plane =[&plane_vertices](GLuint VAO, GLuint VBO, GLuint EBO) {
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * plane_vertices.size(),
+                 plane_vertices.data(), GL_STATIC_DRAW);
+    // position attribute
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+  };
+  helper::SetVAO(plane_vao[0], plane_vao[1], plane_vao[2], set_plane);
+
+  // Configure depth map FBO
+  const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+  GLuint depthMapFBO;
+  glGenFramebuffers(1, &depthMapFBO);
+  // - Create depth texture
+  GLuint depthMap;
+  glGenTextures(1, &depthMap);
+  glBindTexture(GL_TEXTURE_2D, depthMap);
+  
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
     update_delta();
     ProcessInput(window);
     glfwGetWindowSize(window, &width, &height);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     // also clear the depth buffer now!
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ImGui_ImplGlfwGL3_NewFrame();
     create_imgui();
 
-    // bind textures on corresponding texture units
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, box_texture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, eye_texture);
+    glUseProgram(simple_shader_program);
+    RenderScene(simple_shader_program);
+    // // 1. Render depth of scene to texture (from light's perspective)
+    // // - Get light projection/view matrix.
+    // glm::mat4 lightProjection, lightView;
+    // glm::mat4 lightSpaceMatrix;
+    // GLfloat near_plane = 1.0f, far_plane = 7.5f;
+    // lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    // lightView = glm::lookAt(light_position, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+    // lightSpaceMatrix = lightProjection * lightView;
+    // // - render scene from light's point of view
+    // glUseProgram(depth_shader_program);
+    // glUniformMatrix4fv(glGetUniformLocation(depth_shader_program, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 
-    // create transformations
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 projection = glm::mat4(1.0f);
-    glm::mat4 model = glm::mat4(1.0f);
+    // glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    // glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    //   glClear(GL_DEPTH_BUFFER_BIT);
+    //   RenderScene(depth_shader_program);
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    GLuint shader_program = use_gouraud_model ?
-                            gouraud_shader_program : 
-                            phong_shader_program;
-
-    // set shader
-    glUseProgram(shader_program);
-    // set texture
-    helper::SetShaderInt(shader_program, "texture1", 0);
-    helper::SetShaderInt(shader_program, "texture2", 1);
-
-    model = glm::mat4(1.0f);
-    model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-    // pass projection matrix to shader (note that in this case it could change
-    // every frame)
-    projection = glm::perspective(glm::radians(camera->Zoom),
-                                  (float)kScreenWidth / (float)kScreenHeight,
-                                  0.1f, 100.0f);
-    // camera/view transformation
-    view = camera->GetViewMatrix();
-    // pass transformation matrices to the shader
-    helper::SetShaderMat4(shader_program, "projection",
-                          projection);
-    helper::SetShaderMat4(shader_program, "view", view);
-    helper::SetShaderMat4(shader_program, "model", model);
-    helper::SetShaderVec3(shader_program, "objectColor", 1.0f, 0.5f, 0.31f);
-    helper::SetShaderVec3(shader_program, "lightColor",  1.0f, 1.0f, 1.0f);
-    helper::SetShaderVec3(shader_program, "lightPos",  light_position);
-    helper::SetShaderVec3(shader_program, "viewPos",  camera->Position);
-    helper::SetShaderFloat(shader_program, "ambientStrength",  light_strength[0]);
-    helper::SetShaderFloat(shader_program, "diffuseStrength",  light_strength[1]);
-    helper::SetShaderFloat(shader_program, "specularStrength", light_strength[2]);
-    helper::SetShaderFloat(shader_program, "lightStrength",  light_strength[3]);
+    // // Reset viewport
+    // glViewport(0, 0, width, height);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    // render boxes
-    glBindVertexArray(box[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    glUseProgram(light_shader_program);
-    view = glm::mat4(1.0f);
-    projection = glm::mat4(1.0f);
-    model = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(camera->Zoom),
-                                  (float)kScreenWidth / (float)kScreenHeight,
-                                  0.1f, 100.0f);
-    // camera/view transformation
-    view = camera->GetViewMatrix();
-    model = glm::translate(model, light_position);
-    model = glm::scale(model, glm::vec3(0.2f));
-    helper::SetShaderMat4(light_shader_program, "projection",
-                          projection);
-    helper::SetShaderMat4(light_shader_program, "view", view);
-    helper::SetShaderMat4(light_shader_program, "model", model);
-
-    // render boxes
-    glBindVertexArray(light);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // // Render Depth map to quad
+    // glUseProgram(debug_shader_program);
+    // glUniform1f(glGetUniformLocation(debug_shader_program, "near_plane"), near_plane);
+    // glUniform1f(glGetUniformLocation(debug_shader_program, "far_plane"), far_plane);
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, depthMap);
+    // RenderQuad();
 
 
     ImGui::Render();
@@ -333,4 +250,137 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
   if (!can_mouse_move_camera) return;
   std::cout << yoffset << std::endl;
   camera->ProcessMouseScroll((float)yoffset);
+}
+
+void RenderScene(GLuint &shader_program) {
+  // Floor
+  glm::mat4 model = glm::mat4(1.0f);
+  glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE,
+                     glm::value_ptr(model));
+  glBindVertexArray(plane_vao[0]);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
+  // Cubes
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(0.0f, 0.5f, 0.0f));
+  glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE,
+                     glm::value_ptr(model));
+  RenderCube();
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0f));
+  glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE,
+                     glm::value_ptr(model));
+  RenderCube();
+  model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0f));
+  model = glm::rotate(model, 60.0f, glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+  model = glm::scale(model, glm::vec3(0.5));
+  glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE,
+                     glm::value_ptr(model));
+  RenderCube();
+}
+
+// RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color
+// targets and post-processing effects.
+GLuint quadVAO = 0;
+GLuint quadVBO;
+void RenderQuad() {
+  if (quadVAO == 0) {
+    GLfloat quadVertices[] = {
+        // Positions        // Texture Coords
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    };
+    // Setup plane VAO
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
+                 GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (GLvoid*)(3 * sizeof(GLfloat)));
+  }
+  glBindVertexArray(quadVAO);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindVertexArray(0);
+}
+
+// RenderCube() Renders a 1x1 3D cube in NDC.
+GLuint cubeVAO = 0;
+GLuint cubeVBO = 0;
+void RenderCube() {
+  // Initialize (if necessary)
+  if (cubeVAO == 0) {
+    GLfloat vertices[] = {
+        // Back face
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,  // Bottom-left
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,    // top-right
+        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,   // bottom-right
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,    // top-right
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,  // bottom-left
+        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,   // top-left
+        // Front face
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom-left
+        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,   // bottom-right
+        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,    // top-right
+        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,    // top-right
+        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,   // top-left
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // bottom-left
+        // Left face
+        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    // top-right
+        -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // top-left
+        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // bottom-left
+        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // bottom-left
+        -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // bottom-right
+        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    // top-right
+        // Right face
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    // top-left
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // bottom-right
+        0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // top-right
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  // bottom-right
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,    // top-left
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,   // bottom-left
+        // Bottom face
+        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // top-right
+        0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,   // top-left
+        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,    // bottom-left
+        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,    // bottom-left
+        -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,   // bottom-right
+        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,  // top-right
+        // Top face
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // top-left
+        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    // bottom-right
+        0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,   // top-right
+        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,    // bottom-right
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // top-left
+        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f    // bottom-left
+    };
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    // Fill buffer
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // Link vertex attributes
+    glBindVertexArray(cubeVAO);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
+                          (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
+                          (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat),
+                          (GLvoid*)(6 * sizeof(GLfloat)));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+  // Render Cube
+  glBindVertexArray(cubeVAO);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+  glBindVertexArray(0);
 }

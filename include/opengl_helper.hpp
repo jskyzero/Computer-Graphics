@@ -126,8 +126,8 @@ std::string read_string_from_path(std::string path) {
 // initial opengl
 void initial_glfw() {
   assert_true(glfwInit() == GLFW_TRUE, "glfw initial error");
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   #ifdef __APPLE__
     glfwWindowHint(

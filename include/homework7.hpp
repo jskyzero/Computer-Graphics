@@ -13,4 +13,8 @@ void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void ProcessInput(GLFWwindow *window);
 
+void RenderScene(GLuint &shader_program);
+void RenderCube();
+void RenderQuad();
+
 #endif
