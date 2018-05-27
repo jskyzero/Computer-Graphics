@@ -25,6 +25,7 @@ env:
   - TEST_DIR="4 - Transformation"
   - TEST_DIR="5 - Camera"
   - TEST_DIR="6 - Lights and Shading"
+  - TEST_DIR="7 - Shadowing Mapping"
 
 
 # so ugly, but it works
