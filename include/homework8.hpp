@@ -9,12 +9,10 @@
 #include <algorithm>
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void ProcessInput(GLFWwindow *window);
 
-void RenderScene(GLuint &shader_program);
-void RenderCube();
-void RenderQuad();
+void MouseCallback(GLFWwindow* window, double xpos, double ypos);
+void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 #endif
