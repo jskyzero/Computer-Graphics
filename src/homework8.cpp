@@ -25,6 +25,7 @@ size_t points_count = 0;
 std::unique_ptr<GLfloat[]> mouse_points(new GLfloat[kMoursePointsSize]);
 // ImGui
 int total_points = 1000;
+float color[3] { 1.0f, 0.5f, 0.2f };
 
 // global values
 GLuint points_vao[3];
@@ -59,6 +60,7 @@ int main() {
     ImGui::InputFloat3("Second Point", mouse_points.get() + kEachPointsSize * 1);
     ImGui::InputFloat3("Third  Point", mouse_points.get() + kEachPointsSize * 2);
     ImGui::InputFloat3("Fourth Point", mouse_points.get() + kEachPointsSize * 3);
+    ImGui::ColorPicker3("Color", color);
     ImGui::End();
   };
 
@@ -78,7 +80,7 @@ int main() {
   GLuint simple_shader_program = 
       helper::CreatProgramWithShader("../resources/shaders/simple.vs.glsl",
                                      "../resources/shaders/simple.fs.glsl");
-
+  helper::SetShaderVec3(simple_shader_program, "inColor", color[0], color[1], color[2]);
   // vertices
   std::vector<GLfloat> vertices{};
 
@@ -142,6 +144,7 @@ int main() {
     if (points_count == kTotalPointsNum) {
       glUseProgram(simple_shader_program);
       helper::SetVAO(points_vao[0], points_vao[1], points_vao[2], set_plane);
+      helper::SetShaderVec3(simple_shader_program, "inColor", color[0], color[1], color[2]);
       glDrawArrays(GL_LINES, 0, 2);
       glDrawArrays(GL_LINES, 1, 2);
       glDrawArrays(GL_LINES, 2, 2);

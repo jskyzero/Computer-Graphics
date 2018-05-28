@@ -26,3 +26,8 @@
 + If there are questions or errors
   1. if run in windows have null function error, try to comment the funciton `glBindSampler()` in `src/imgui_impl_glfw_gl3.cpp`
   2. ...
+
+## 实现思路
+
+1. 捕捉鼠标点击事件，记录点击的点，然后套用公式生成其他的点。
+2. 更改颜色使用shader传递参数，能够修改点的话加一个ImGUI就好。
