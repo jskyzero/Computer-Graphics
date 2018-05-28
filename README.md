@@ -23,7 +23,6 @@
 ├── 5 - Camera
 ├── 6 - Lights and Shading
 ├── 7 - Shadowing Mapping
-├── build
 ├── docs
 ├── projects
 │   ├── OpenGL-Hardway

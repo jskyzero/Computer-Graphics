@@ -26,6 +26,7 @@ env:
   - TEST_DIR="5 - Camera"
   - TEST_DIR="6 - Lights and Shading"
   - TEST_DIR="7 - Shadowing Mapping"
+  - TEST_DIR="8 - Bezier Curve"
 
 
 # so ugly, but it works
