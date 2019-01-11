@@ -2,7 +2,16 @@ project (homework3)
 cmake_minimum_required (VERSION 3.1)
 
 set (CMAKE_CXX_STANDARD 11)
-set (OPENGL_PATH /home/jskyzero/workspace/OpenGL)
+IF (WIN32)
+  MESSAGE(STATUS "OS Version: Windows")
+  set (OPENGL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../projects/OpenGL-Playground)
+ELSEIF (APPLE)
+  MESSAGE(STATUS "OS Version: Apple systens.")
+  set (OPENGL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../projects/OpenGL-Playground)
+ELSEIF (UNIX)
+  MESSAGE(STATUS "OS Version: UNIX-like OS's.")
+  set (OPENGL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../projects/OpenGL-Playground)
+ENDIF()
 
 # in linux, you can uncomment this warn setting
 # set (CMAKE_CXX_FLAGS "-Wall")
@@ -18,7 +27,9 @@ find_package (OpenGL REQUIRED)
 
 add_subdirectory (${OPENGL_PATH}/glfw glfw)
 add_library (glad ${OPENGL_PATH}/glad/src/glad.c)
-add_library (imgui ${OPENGL_PATH}/imgui/imgui.cpp ${OPENGL_PATH}/imgui/imgui_demo.cpp ${OPENGL_PATH}/imgui/imgui_draw.cpp)
+add_library (imgui ${OPENGL_PATH}/imgui/imgui.cpp 
+                   ${OPENGL_PATH}/imgui/imgui_demo.cpp 
+                   ${OPENGL_PATH}/imgui/imgui_draw.cpp)
 
 include_directories (${OPENGL_PATH}/glfw/include)
 include_directories (${OPENGL_PATH}/glad/include)

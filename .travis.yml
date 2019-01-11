@@ -29,12 +29,7 @@ env:
   - TEST_DIR="8 - Bezier Curve"
 
 
-# so ugly, but it works
 before_install:
-  - mkdir jskyzero workspace
-  - mv workspace jskyzero
-  - mv projects/OpenGL-Playground jskyzero/workspace/OpenGL
-  - sudo mv jskyzero /home
   - sudo apt-get install libgl1-mesa-dev xorg-dev libglu1-mesa-dev libx11-dev
 
 script: 
