@@ -1,7 +1,7 @@
 # Computer-Graphics
 `jskyzero` `2018/03/11`
 
-[![Build Status](https://travis-ci.org/jskyzero/Computer-Graphics.svg?branch=master)](https://travis-ci.org/jskyzero/Computer-Graphics)
+[![Build Status](https://travis-ci.com/oYOvOYo/Computer-Graphics.svg?branch=master)](https://travis-ci.com/oYOvOYo/Computer-Graphics)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jskyzero/Computer-Graphics/issues)
 
 ![OpenGL](./docs/OpenGL.jpg)
