@@ -3,8 +3,7 @@ cmake_minimum_required (VERSION 3.1)
 
 set (CMAKE_CXX_STANDARD 14)
 
-if (UNIX)
-  IF (WIN32)
+IF (WIN32)
   MESSAGE(STATUS "OS Version: Windows")
   set (OPENGL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../projects/OpenGL-Playground)
 ELSEIF (APPLE)
@@ -14,11 +13,14 @@ ELSEIF (UNIX)
   MESSAGE(STATUS "OS Version: UNIX-like OS's.")
   set (OPENGL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../projects/OpenGL-Playground)
 ENDIF()
-endif (UNIX)
 
-if (MSVC)
-  set (OPENGL_PATH ../OpenGL)
-endif (MSVC)
+# if (UNIX)
+#   set (OPENGL_PATH ../OpenGL)
+# endif (UNIX)
+
+# if (MSVC)
+#   set (OPENGL_PATH ../OpenGL)
+# endif (MSVC)
 
 # in linux, you can uncomment this warn setting
 # set (CMAKE_CXX_FLAGS "-Wall")
