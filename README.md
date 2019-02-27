@@ -23,11 +23,18 @@
 ├── 5 - Camera
 ├── 6 - Lights and Shading
 ├── 7 - Shadowing Mapping
-├── docs
-├── projects
-│   ├── OpenGL-Hardway
-│   └── OpenGL-Playground
-└── README.md
+├── 8 - Bezier Curve
+├── README.md
+├── docs  // all homework description documents 
+└── projects
+    ├── OpenGL-Hardway
+    └── OpenGL-Playground
 ```
 
+see each indivial topic folder!
+
+
 ## Reference
+
++ [learnopengl-cn](https://learnopengl-cn.github.io/)
++ Mathematics for 3D Game Programming and Computer Graphics 3rd
