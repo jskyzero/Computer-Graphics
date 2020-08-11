@@ -1,0 +1,4 @@
+
+**/**/imgui_impl_glfw_gl3.* linguist-detectable=false
+**/**/stb_image.* linguist-detectable=false
+projects/OpenGL-Playground/** linguist-detectable=false
